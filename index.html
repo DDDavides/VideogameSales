@@ -1,12 +1,24 @@
 <html>
     <head>  
         <title>Prova</title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="styles/style.css">
         <script src="lib/d3.min.js"></script>
         <meta charset="UTF-8">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Cabin&family=Oswald:wght@300&display=swap" rel="stylesheet">
     </head>
-    <body>
-        <svg id="my_dataviz" width="400" height="300"></svg>
+    <body class="no-margin no-padding">
+        <div id="main-window">
+            <div id="header">
+                <h1 class="title no-margin no-padding">Videogame Sales</h1>
+            </div>
+
+            <div class="flex-container" id="dataviz">
+                <svg version="1.1" preserveAspectRatio="none" id="first-view"></svg>
+                <svg preserveAspectRatio="xMinYMin none" id="second-view"></svg>
+            </div>
+        </div>
         <script src="scripts/choropletMap.js"></script>
     </body>
     
