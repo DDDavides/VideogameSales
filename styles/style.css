@@ -1,5 +1,5 @@
 body {
-    background-color: #bcbcbc;
+    background-color: #fefefe;
     color: black;
 }
 
@@ -32,8 +32,19 @@ body {
     font-family: 'Cabin', sans-serif;
 }
 
+.choro-legend {
+    font-size: .8em;
+    font-family: 'Cabin', sans-serif;
+    text-align: center;
+    stroke: black;
+    stroke-width: 1px;
+
+    width: 2%;
+    height: 40%;
+}
+
 #dataviz {
-    height: 120vh;
+    height: 135vh;
     width: 100%;
 }
 
@@ -44,16 +55,21 @@ body {
 }
 
 #second-view {
-    flex: 2 1 auto;
+    flex: 1 1 auto;
 }
 
 .country {
-    stroke-width: 1px;
+    stroke-width: .1px;
     stroke: black;
-    opacity: .5;
+    fill-opacity: .7;
+    transition: fill-opacity .2s ease-in-out, stroke-width .1s ease-in-out;
 }
 .country:hover {
-    opacity: 1;
-    stroke-width: 1px;
-    transition: "opacity, stroke-width" 0.5s ease-in-out;
+    cursor: pointer;
+}
+
+.highlighted {
+    stroke-width: .5px;
+    fill-opacity: 1;
+    transition: fill-opacity .2s ease-in-out, stroke-width .1s ease-in-out;
 }

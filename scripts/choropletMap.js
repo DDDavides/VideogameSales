@@ -4,46 +4,86 @@ const boundingRect = svg.node().getBoundingClientRect();
 const width = boundingRect.width;
 const height = boundingRect.height;
 
-console.log(width, height);
-console.log(width / height);
+async function drawLegend(colorScale) {
+  const defs = svg.append("defs")
+  
+  const linearGradient = defs.append("linearGradient")
+      .attr("id", "linear-gradient");
+  
+  linearGradient.selectAll("stop")
+    .data(colorScale.ticks().map((t, i, n) => ({ offset: `${100*i/n.length}%`, color: colorScale(t) })))
+    .enter().append("stop")
+      .attr("offset", d => d.offset)
+      .attr("stop-color", d => d.color);
+    
+  linearGradient.attr("gradientTransform", `rotate(-90), translate(-1, 0)`);
+  
+  svg.append('g')
+  .append("rect")
+    .attr("class", "choro-legend")
+	  .style("fill", "url(#linear-gradient)");
 
-// Map and projection
-var path = d3.geoPath();
-var projection = d3.geoMercator()
-  // .scale(width/(Math.PI*2)*0.9*0.7)
-  // .center([0, 20])
-  .translate([width / 2, height / 2]);
 
+}
 
-// Data and color scale
-let data = new Map()
-const colorScale = d3.scaleThreshold()
-  .domain([100000, 1000000, 10000000, 30000000, 100000000, 500000000])
-  .range(d3.schemeGreens[7]);
-
-// Load external data and boot
-Promise.all([
-  d3.json("./dataset/geo_cleaned.geojson"),
-  d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world_population.csv", 
-  function (d) {
-    data.set(d.code, d.pop)
-  })])
-  .then(function (loadData) {
-    let topo = loadData[0]
-    projection.fitSize([width, height], {type:"FeatureCollection", features: topo.features});
-    // Draw the map
-    svg.append("g")
-      .selectAll("path")
-      .data(topo.features)
-      .join("path")
-      // draw each country
-      .attr("class", "country")
-      .attr("d", d3.geoPath()
-        .projection(projection))
-      // set the color of each country
-      .attr("fill", function (d) {
-        d.total = data.get(d.id) || 0;
-        return colorScale(d.total);
-      });
+async function drawChoro(sales, colorPalette) {
+  let geo = await d3.json("./dataset/geo_cleaned.geojson");
+    
+  let data = new Map();
+  // keys = sales[0].keys();
+  continents = ["NA", "EU", "JP", "Other"];
+  
+  sales.forEach(d => {
+    for (let i = 0; i < continents.length; i++) {
+      let continent = continents[i];
+      if (!data.has(continent)) {
+        data.set(continent, 0);
+      }
+      let curr_sales = data.get(continent);
+      let new_sales = parseFloat(d[continent+"_Sales"]);
+      data.set(continent, curr_sales + new_sales);
+    }
   });
-svg.attr("transform", "scale(" + height/width + ", 1)")
+
+  let colorScale = d3.scaleSequential(colorPalette)
+    .domain([0, d3.max(data.values())]);
+
+  // Map and projection
+  let projection = d3.geoMercator()
+    // .scale(width/(Math.PI*2)*0.9*0.7)
+    // .center([0, 20])
+    .translate([width / 2, height / 2]);
+
+  let onclick = function (d) {
+    let element = d3.select(this);
+    element.classed("highlighted", !element.classed("highlighted"));
+  };
+
+
+  projection.fitSize([width, height], {type:"FeatureCollection", features: geo.features});
+  // Draw the map
+  svg.append("g")
+    .selectAll("path")
+    .data(geo.features)
+    .join("path")
+    // draw each country
+    .attr("class", "country")
+    .attr("d", d3.geoPath()
+      .projection(projection))
+    // set the color of each country
+    .attr("fill", function (d) {
+      continent = d.properties.continent
+      d.total = data.get(continent) || 0;
+
+      console.log(continent);
+      console.log(d.total);
+      
+      return colorScale(d.total);
+    });
+    
+    
+  d3.selectAll(".country")
+    .on("click", onclick);
+
+  drawLegend(colorScale);
+};
