@@ -1,0 +1,25 @@
+
+.country {
+    stroke-width: .1px;
+    stroke: black;
+    fill-opacity: .7;
+    transition: fill-opacity .2s ease-in-out, stroke-width .1s ease-in-out;
+}
+
+.country:hover {
+    cursor: pointer;
+}
+
+.highlighted {
+    stroke-width: .5px;
+    fill-opacity: 1;
+    transition: fill-opacity .2s ease-in-out, stroke-width .1s ease-in-out;
+}
+
+.choro-legend {
+    font-size: .8em;
+    font-family: 'Cabin', sans-serif;
+    text-align: center;
+    stroke: black;
+    stroke-width: .5px;
+}

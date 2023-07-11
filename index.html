@@ -1,7 +1,8 @@
 <html>
     <head>  
         <title>Prova</title>
-        <link rel="stylesheet" href="styles/style.css">
+        <link rel="stylesheet" href="styles/main_style.css">
+        <link rel="stylesheet" href="styles/choro_style.css">
         <script src="lib/d3.min.js"></script>
         <meta charset="UTF-8">
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -9,16 +10,15 @@
         <link href="https://fonts.googleapis.com/css2?family=Cabin&family=Oswald:wght@300&display=swap" rel="stylesheet">
     </head>
     <body class="no-margin no-padding">
-        <div id="main-window">
             <div id="header">
-                <h1 class="title no-margin no-padding">Videogame Sales</h1>
+                <h1 class="title no-margin no-padding disable-select">Videogame Sales</h1>
             </div>
 
             <div class="flex-container" id="dataviz">
                 <svg version="1.1" preserveAspectRatio="none" id="first-view"></svg>
                 <svg preserveAspectRatio="xMinYMin none" id="second-view"></svg>
             </div>
-        </div>
+
         <script src="scripts/choropletMap.js"></script>
         <script src="scripts/main.js"></script>
     </body>

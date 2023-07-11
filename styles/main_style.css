@@ -1,0 +1,57 @@
+body {
+    background-color: #fefefe;
+    color: black;
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.fill-spaces {
+    flex: 1 1 auto;
+}
+
+.no-padding {
+    padding: 0;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+.title {
+    font-size: 3em;
+    font-family: 'Oswald', sans-serif;
+    text-align: center;
+}
+
+.text {
+    font-size: 1.5em;
+    font-family: 'Cabin', sans-serif;
+}
+
+.disable-select {
+    user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+
+#dataviz {
+    height: 135vh;
+    width: 100%;
+}
+
+#first-view {
+    flex: 3 1 auto;
+    border-top: 2px solid black;
+}
+
+#second-view {
+    flex: 1 1 auto;
+}
+
