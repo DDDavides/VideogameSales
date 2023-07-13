@@ -14,6 +14,10 @@ let genreToggled = new Set();
 let platformToggled = new Set();
 let yearToggled = new Set();
 
+let genres = new Set();
+let platforms = new Set();
+let years = new Set();
+
 /* When the user clicks on the button, 
 toggle between hiding and showing the dropdown content */
 function showDropDownToggles(elementId) {
@@ -37,68 +41,70 @@ function showDropDownToggles(elementId) {
 // function that gets the genres, platforms, publishers, and years from the data
 // and displays them in the dropdown menus
 function displayInteractive(sales) {
-  let genres = new Set();
-  let platforms = new Set();
-  let publishers = new Set();
-  let years = new Set();
+  // get all the genres, platforms and years
+
   sales.forEach(d => {
     if (d.Genre != "N/A") {
       genres.add(d.Genre);
     }
-    
     if (d.Platform != "N/A") {
       platforms.add(d.Platform);
     }
-
-    if (d.Publisher != "N/A") {
-      publishers.add(d.Publisher);
-    }
-
     if (d.Year != "N/A") {
       years.add(d.Year);
     }
-    
   });
   
+  // sort the genres, platforms and years
   genres = Array.from(genres).sort();
   platforms = Array.from(platforms).sort();
-  publishers = Array.from(publishers).sort();
   years = Array.from(years).sort();
 
+  // display the genres, platforms and years in the dropdown menus
   checkboxContainer = document.getElementById("genreDropdown");
   genres.forEach(d => {
-    checkboxContainer.innerHTML += '<div class="checkbox"><input checked=true class="toggle genre" type="checkbox" id="'+d+'" name="'+d+'" value="'+d+'"><label class="text" for="'+d+'">'+d+'</label><br></div>';
+    checkboxContainer.innerHTML += '<div class="checkbox"><input checked=true class="toggle" type="checkbox" id="'+d+'" name="genre" value="'+d+'"><label class="text" for="'+d+'">'+d+'</label><br></div>';
   });
+  genreToggled = new Set(genres);
 
   checkboxContainer = document.getElementById("platformDropdown");
   platforms.forEach(d => {
-    checkboxContainer.innerHTML += '<div class="checkbox"><input checked=true class="toggle platform" type="checkbox" id="'+d+'" name="'+d+'" value="'+d+'"><label class="text" for="'+d+'">'+d+'</label><br></div>';
+    checkboxContainer.innerHTML += '<div class="checkbox"><input checked=true class="toggle" type="checkbox" id="'+d+'" name="platform" value="'+d+'"><label class="text" for="'+d+'">'+d+'</label><br></div>';
   });
+  platformToggled = new Set(platforms);
 
   checkboxContainer = document.getElementById("yearDropdown");
   years.forEach(d => {
-    checkboxContainer.innerHTML += '<div class="checkbox"><input checked=true class="toggle year" type="checkbox" id="'+d+'" name="'+d+'" value="'+d+'"><label class="text" for="'+d+'">'+d+'</label><br></div>';
+    checkboxContainer.innerHTML += '<div class="checkbox"><input checked=true class="toggle" type="checkbox" id="'+d+'" name="year" value="'+d+'"><label class="text" for="'+d+'">'+d+'</label><br></div>';
   });
+  yearToggled = new Set(years);
 
+  // add event listeners to the toggles
+  // when a toggle is clicked, add or remove the value of the toggle to the corresponding set
   toggles = document.getElementsByClassName("toggle");
-  togglesArray = Array.from(toggles);
-  togglesArray.forEach(d => {
-    d.onclick = function(mouseEvent) {
-      toggle = mouseEvent.target;
+  toggles = Array.from(toggles);
+  toggles.forEach(d => {
+    d.onclick = function(d) {
+      toggle = d.target;
+      toggle_name = toggle.getAttribute("name");
       if (toggle.checked) {
-        if (toggle.classList.contains("genre")) {
+        if (toggle_name == "genre") {
           genreToggled.add(toggle.value);
-        } else if (toggle.classList.contains("platform")) {
+        } 
+        if (toggle_name == "platform") {
           platformToggled.add(toggle.value);
-        } else if (toggle.classList.contains("year")) {
+        } 
+        if (toggle_name == "year") {
           yearToggled.add(toggle.value);
         }
       } else {
-        if (toggle.classList.contains("genre")) {
+        if (toggle_name == "genre") {
           genreToggled.delete(toggle.value);
-        } else if (toggle.classList.contains("platform")) {
+        } 
+        if (toggle_name == "platform") {
           platformToggled.delete(toggle.value);
-        } else if (toggle.classList.contains("year")) {
+        }
+        if (toggle_name == "year") {
           yearToggled.delete(toggle.value);
         }
       }
@@ -130,4 +136,44 @@ function filterData(sales) {
   });
   let colorPalette = d3.interpolateGreens;
   drawChoro(filteredData, colorPalette);
+}
+
+function toggleAllYears(toggle) {
+  if (toggle.checked) {
+    yearToggled = new Set(years);
+  } else {
+    yearToggled = new Set();
+  }
+  filterData(sales);
+}
+
+function toggleAllGenres(toggle) {
+  if (toggle.checked) {
+    genreToggled = new Set(genres);
+  } else {
+    genreToggled = new Set();
+  }
+  filterData(sales);
+}
+
+function toggleAllPlatforms(toggle) {
+  toggles = document.getElementsByClassName("toggle");
+  toggles = Array.from(toggles);
+  if (toggle.checked) {
+    platformToggled = new Set(platforms);
+    toggles.forEach(d => {
+      if (d.getAttribute("name") == "platform") {
+        d.checked = true;
+      }
+    });
+  } else {
+    toggles.forEach(d => {
+      if (d.getAttribute("name") == "platform") {
+        d.checked = false;
+      }
+    });
+    platformToggled = new Set();
+  }
+  console.log(platformToggled);
+  filterData(sales);
 }

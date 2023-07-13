@@ -1,8 +1,9 @@
 <html>
     <head>  
         <title>Prova</title>
-        <link rel="stylesheet" href="styles/style.css">
-        <link rel="stylesheet" href="styles/interactionBarStyle.css">
+        <link rel="stylesheet" href="styles/main_style.css">
+        <link rel="stylesheet" href="styles/interaction_bar_style.css"> 
+        <link rel="stylesheet" href="styles/choro_style.css">
         <script src="lib/d3.min.js"></script>
         <meta charset="UTF-8">
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,18 +27,33 @@
                     <div class="dropdown">
                         <button onclick="showDropDownToggles('genreDropdown')" class="dropbtn text">Genre</button>
                         <div id="genreDropdown" class="dropdown-content">
+                            <div class="checkbox">
+                                <input checked=true class="toggle" type="checkbox" id="toggleAllGenres" name="toggleAllGenres" onclick="toggleAllGenres(this)">
+                                <label class="text" for="'+d+'">toggle all</label>
+                                <br>
+                            </div>
                         </div>
                       </div>
 
                       <div class="dropdown">
                         <button onclick="showDropDownToggles('platformDropdown')" class="dropbtn text">Platform</button>
                         <div id="platformDropdown" class="dropdown-content">
+                            <div class="checkbox">
+                                <input checked=true class="toggle" type="checkbox" id="toggleAllPlatforms" name="toggleAllPlatforms" onclick="toggleAllPlatforms(this)">
+                                <label class="text" for="'+d+'">toggle all</label>
+                                <br>
+                            </div>
                         </div>
                       </div>
 
                       <div class="dropdown">
                         <button onclick="showDropDownToggles('yearDropdown')" class="dropbtn text">Year</button>
                         <div id="yearDropdown" class="dropdown-content">
+                            <div class="checkbox">
+                                <input checked=true class="toggle" type="checkbox" id="toggleAllYears" name="toggleAllYears" onclick="toggleAllYears(this)">
+                                <label class="text" for="'+d+'">toggle all</label>
+                                <br>
+                            </div>
                         </div>
                       </div>
                     
