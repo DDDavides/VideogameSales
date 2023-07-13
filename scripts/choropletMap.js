@@ -162,6 +162,8 @@ function computeTotalSales(sales) {
   // compute total sales for each continent
   for (let i = 0; i < sales.length; i++) {
     let sale = sales[i];
+    
+    // iterate over continents
     for (let j = 0; j < continents.length; j++) {
       let continent = continents[j];
 
@@ -209,6 +211,7 @@ async function drawLegend() {
 
 async function updateChoro(sales) {
   data = computeTotalSales(sales);
+
   svg.selectAll(".continent")
     .data(geo.features).transition().duration(500)
     .attr("fill", function (d) {
@@ -221,7 +224,9 @@ async function updateChoro(sales) {
 async function drawChoro(sales, map, colors) {
   geo = map;
   colorScale = colors;
+  
   data = computeTotalSales(sales);
+
   let onclick = function (d) {
     let element = d3.select(this);
     element.classed("highlighted", !element.classed("highlighted"));
@@ -229,7 +234,6 @@ async function drawChoro(sales, map, colors) {
 
   // Map and projection
   let projection = d3.geoMercator();
-
   projection.fitSize([width, height], { type: "FeatureCollection", features: geo.features });
 
   // Draw the map
@@ -248,7 +252,8 @@ async function drawChoro(sales, map, colors) {
       return colorScale(d.total);
     });
 
-
+  
+  // add onclick event
   d3.selectAll(".continent")
     .on("click", onclick);
 
