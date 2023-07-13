@@ -18,6 +18,8 @@ let genres = new Set();
 let platforms = new Set();
 let years = new Set();
 
+let data;
+
 /* When the user clicks on the button, 
 toggle between hiding and showing the dropdown content */
 function showDropDownToggles(elementId) {
@@ -42,7 +44,7 @@ function showDropDownToggles(elementId) {
 // and displays them in the dropdown menus
 function displayInteractive(sales) {
   // get all the genres, platforms and years
-
+  data = sales;
   sales.forEach(d => {
     if (d.Genre != "N/A") {
       genres.add(d.Genre);
@@ -135,25 +137,49 @@ function filterData(sales) {
     return true;
   });
   let colorPalette = d3.interpolateGreens;
-  drawChoro(filteredData, colorPalette);
+  updateChoro(filteredData, colorPalette);
 }
 
 function toggleAllYears(toggle) {
+  toggles = document.getElementsByClassName("toggle");
+  toggles = Array.from(toggles);
   if (toggle.checked) {
     yearToggled = new Set(years);
+    toggles.forEach(d => {
+      if (d.getAttribute("name") == "year") {
+        d.checked = true;
+      }
+    });
   } else {
+    toggles.forEach(d => {
+      if (d.getAttribute("name") == "year") {
+        d.checked = false;
+      }
+    });
     yearToggled = new Set();
   }
-  filterData(sales);
+  filterData(data);
 }
 
 function toggleAllGenres(toggle) {
+  toggles = document.getElementsByClassName("toggle");
+  toggles = Array.from(toggles);
   if (toggle.checked) {
     genreToggled = new Set(genres);
+    toggles.forEach(d => {
+      if (d.getAttribute("name") == "genre") {
+        d.checked = true;
+      }
+    });
   } else {
+    toggles.forEach(d => {
+      if (d.getAttribute("name") == "genre") {
+        d.checked = false;
+      }
+    });
     genreToggled = new Set();
   }
-  filterData(sales);
+  filterData(data);
 }
 
 function toggleAllPlatforms(toggle) {
@@ -174,6 +200,5 @@ function toggleAllPlatforms(toggle) {
     });
     platformToggled = new Set();
   }
-  console.log(platformToggled);
-  filterData(sales);
+  filterData(data);
 }
