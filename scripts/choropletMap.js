@@ -180,32 +180,8 @@ async function drawLegend(colorScale) {
     d3.select(".choro-legend").attr("transform", `translate(${legendMargin.left},${legendMargin.top})`);
 }
 
-function computeTotalSales(sales) {
-  let data = new Map();
-  let continents = ["NA", "EU", "JP", "Other"];
 
-  // compute total sales for each continent
-  for(let i = 0; i < sales.length; i++) {
-    let sale = sales[i];
-    for (let j = 0; j < continents.length; j++) {
-      let continent = continents[j];
-      
-      if (!data.has(continent)) {
-        data.set(continent, 0);
-      }
-
-      let curr_sales = data.get(continent);
-      let new_sales = parseFloat(sale[continent + "_Sales"]);
-
-      data.set(continent, curr_sales + new_sales);
-    }
-  }
-  return data;
-}
-
-async function updateChoro(sales, colorPalette) {
-  let data = computeTotalSales(sales);
-  let geo = await d3.json("./dataset/geo_final.geojson");
+async function updateChoro(data, geo, colorPalette) {
   
   svg.selectAll(".continent")
     .data(geo.features).transition().duration(500)
@@ -216,27 +192,18 @@ async function updateChoro(sales, colorPalette) {
     });
 }
 
-async function drawChoro(sales, colorPalette) {
-  let geo = await d3.json("./dataset/geo_final.geojson");
-
-  let data = computeTotalSales(sales);
-
-  let colorScale = d3.scaleSequential(colorPalette)
-    .domain([0, d3.max(data.values())]);
-
-  // Map and projection
-  let projection = d3.geoMercator();
-  // .scale(width/(Math.PI*2)*0.9*0.7)
-  // .center([0, 20])
-  // .translate([width / 2, height / 2]);
-
+async function drawChoro(data, geo, colorScale) {
+  
   let onclick = function (d) {
     let element = d3.select(this);
     element.classed("highlighted", !element.classed("highlighted"));
   };
+  
+  // Map and projection
+  let projection = d3.geoMercator();
 
   projection.fitSize([width, height], { type: "FeatureCollection", features: geo.features });
-  
+
   // Draw the map
   svg.append("g")
     .selectAll("path")
@@ -256,6 +223,4 @@ async function drawChoro(sales, colorPalette) {
 
   d3.selectAll(".continent")
     .on("click", onclick);
-
-  drawLegend(colorScale);
 };
