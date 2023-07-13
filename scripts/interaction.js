@@ -18,7 +18,7 @@ let genres = new Set();
 let platforms = new Set();
 let years = new Set();
 
-let data;
+let allData;
 
 /* When the user clicks on the button, 
 toggle between hiding and showing the dropdown content */
@@ -44,7 +44,7 @@ function showDropDownToggles(elementId) {
 // and displays them in the dropdown menus
 function displayInteractive(sales) {
   // get all the genres, platforms and years
-  data = sales;
+  allData = sales;
   sales.forEach(d => {
     if (d.Genre != "N/A") {
       genres.add(d.Genre);
@@ -110,30 +110,24 @@ function displayInteractive(sales) {
           yearToggled.delete(toggle.value);
         }
       }
-      filterData(sales);
+      filterData(allData);
     }
   });
 
 }
 
 // function that filters the data based on the toggles
-function filterData(sales) {
-  let filteredData = sales.filter(d => {
-    if (genreToggled.size > 0) {
-      if (!genreToggled.has(d.Genre)) {
+function filterData(data) {
+  let filteredData = data.filter(d => {
+    if (!genreToggled.has(d.Genre)) {
         return false;
       }
-    }
-    if (platformToggled.size > 0) {
-      if (!platformToggled.has(d.Platform)) {
+    if (!platformToggled.has(d.Platform)) {
         return false;
       }
-    }
-    if (yearToggled.size > 0) {
-      if (!yearToggled.has(d.Year)) {
+    if (!yearToggled.has(d.Year)) {
         return false;
       }
-    }
     return true;
   });
   updateChoro(filteredData);
@@ -157,7 +151,7 @@ function toggleAllYears(toggle) {
     });
     yearToggled = new Set();
   }
-  filterData(data);
+  filterData(allData);
 }
 
 function toggleAllGenres(toggle) {
@@ -178,7 +172,7 @@ function toggleAllGenres(toggle) {
     });
     genreToggled = new Set();
   }
-  filterData(data);
+  filterData(allData);
 }
 
 function toggleAllPlatforms(toggle) {
@@ -199,5 +193,5 @@ function toggleAllPlatforms(toggle) {
     });
     platformToggled = new Set();
   }
-  filterData(data);
+  filterData(allData);
 }

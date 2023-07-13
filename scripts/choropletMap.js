@@ -4,6 +4,10 @@ const boundingRect = svg.node().getBoundingClientRect();
 const width = boundingRect.width;
 const height = boundingRect.height;
 
+const continents = ["NA", "EU", "JP", "Other"];
+let colorScale = null;
+let geo = null;
+
 function legend({
   color,
   title,
@@ -152,54 +156,77 @@ function legend({
   return svg.node();
 }
 
-async function drawLegend(colorScale) {
-  let legendWidth =.02*width;
-  let legendHeight = .25*width;
-  let legendMargin = { top: height / 2 , right: 0, bottom: 0, left: 20 };
+function computeTotalSales(sales) {
+  let data = new Map();
+
+  // compute total sales for each continent
+  for (let i = 0; i < sales.length; i++) {
+    let sale = sales[i];
+    for (let j = 0; j < continents.length; j++) {
+      let continent = continents[j];
+
+      if (!data.has(continent)) {
+        data.set(continent, 0);
+      }
+
+      let curr_sales = data.get(continent);
+      let new_sales = parseFloat(sale[continent + "_Sales"]);
+
+      data.set(continent, curr_sales + new_sales);
+    }
+  }
+  return data;
+}
+
+async function drawLegend() {
+  let legendWidth = .02 * width;
+  let legendHeight = .25 * width;
+  let legendMargin = { top: height / 2, right: 0, bottom: 0, left: 20 };
   let legendTicks = 5;
   let legendTickSize = 5;
-  let legendTickFormat = (d) => {return d3.format("")(d/1000) + " B";}
+  let legendTickFormat = (d) => { return d3.format("")(d / 1000) + " B"; }
 
   d3.select("#first-view")
     .append("g")
-      .attr("class", "choro-legend disable-select")
-      .append(() => legend({
-        color: colorScale,
-        width: legendWidth,
-        height: legendHeight,
-        marginTop: 0,
-        marginRight: 0,
-        marginBottom: 0,
-        marginLeft: 0,
-        ticks: legendTicks,
-        tickSize: legendTickSize,
-        tickFormat: legendTickFormat
-      }));
+    .attr("class", "choro-legend disable-select")
+    .append(() => legend({
+      color: colorScale,
+      width: legendWidth,
+      height: legendHeight,
+      marginTop: 0,
+      marginRight: 0,
+      marginBottom: 0,
+      marginLeft: 0,
+      ticks: legendTicks,
+      tickSize: legendTickSize,
+      tickFormat: legendTickFormat
+    }));
 
-    d3.select("#first-view").selectAll("text").attr("class", "text");
-    d3.select(".choro-legend").attr("transform", `translate(${legendMargin.left},${legendMargin.top})`);
+  d3.select("#first-view").selectAll("text").attr("class", "text");
+  d3.select(".choro-legend").attr("transform", `translate(${legendMargin.left},${legendMargin.top})`);
 }
 
 
-async function updateChoro(data, colorScale) {
-  let geo = await d3.json("./dataset/geo_final.geojson");
-  
+async function updateChoro(sales) {
+  data = computeTotalSales(sales);
   svg.selectAll(".continent")
     .data(geo.features).transition().duration(500)
     .attr("fill", function (d) {
-      continent = d.properties.continent
+      var continent = d.properties.continent
       d.total = data.get(continent) || 0;
       return colorScale(d.total);
     });
 }
 
-async function drawChoro(data, colorScale) {
-  let geo = await d3.json("./dataset/geo_final.geojson");
+async function drawChoro(sales, map, colors) {
+  geo = map;
+  colorScale = colors;
+  data = computeTotalSales(sales);
   let onclick = function (d) {
     let element = d3.select(this);
     element.classed("highlighted", !element.classed("highlighted"));
   };
-  
+
   // Map and projection
   let projection = d3.geoMercator();
 
@@ -224,4 +251,6 @@ async function drawChoro(data, colorScale) {
 
   d3.selectAll(".continent")
     .on("click", onclick);
+
+  drawLegend();
 };
