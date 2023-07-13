@@ -180,24 +180,46 @@ async function drawLegend(colorScale) {
     d3.select(".choro-legend").attr("transform", `translate(${legendMargin.left},${legendMargin.top})`);
 }
 
-async function drawChoro(sales, colorPalette) {
-  let geo = await d3.json("./dataset/geo_final.geojson");
+function computeTotalSales(sales) {
   let data = new Map();
-
-  continents = ["NA", "EU", "JP", "Other"];
+  let continents = ["NA", "EU", "JP", "Other"];
 
   // compute total sales for each continent
-  sales.forEach(d => {
-    for (let i = 0; i < continents.length; i++) {
-      let continent = continents[i];
+  for(let i = 0; i < sales.length; i++) {
+    let sale = sales[i];
+    for (let j = 0; j < continents.length; j++) {
+      let continent = continents[j];
+      
       if (!data.has(continent)) {
         data.set(continent, 0);
       }
+
       let curr_sales = data.get(continent);
-      let new_sales = parseFloat(d[continent + "_Sales"]);
+      let new_sales = parseFloat(sale[continent + "_Sales"]);
+
       data.set(continent, curr_sales + new_sales);
     }
-  });
+  }
+  return data;
+}
+
+async function updateChoro(sales, colorPalette) {
+  let data = computeTotalSales(sales);
+  let geo = await d3.json("./dataset/geo_final.geojson");
+  
+  svg.selectAll(".continent")
+    .data(geo.features).transition().duration(500)
+    .attr("fill", function (d) {
+      continent = d.properties.continent
+      d.total = data.get(continent) || 0;
+      return colorPalette(d.total);
+    });
+}
+
+async function drawChoro(sales, colorPalette) {
+  let geo = await d3.json("./dataset/geo_final.geojson");
+
+  let data = computeTotalSales(sales);
 
   let colorScale = d3.scaleSequential(colorPalette)
     .domain([0, d3.max(data.values())]);
