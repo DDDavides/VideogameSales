@@ -24,7 +24,6 @@ function computeTotalSales(sales) {
 
 async function main() {
     let sales = await d3.csv("./dataset/vgsales.csv");
-    let geo = await d3.json("./dataset/geo_final.geojson");
 
     let data = computeTotalSales(sales);
 
@@ -33,7 +32,7 @@ async function main() {
     let colorScale = d3.scaleSequential(colorPalette)
         .domain([0, d3.max(data.values())]);
 
-    drawChoro(data, geo, colorScale);
+    drawChoro(data, colorScale);
     drawLegend(colorScale);
     displayInteractive(sales);
 };

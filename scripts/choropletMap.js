@@ -181,19 +181,21 @@ async function drawLegend(colorScale) {
 }
 
 
-async function updateChoro(data, geo, colorPalette) {
+async function updateChoro(data, colorScale) {
+  let geo = await d3.json("./dataset/geo_final.geojson");
+  data.set("Other", 10000);
   
   svg.selectAll(".continent")
     .data(geo.features).transition().duration(500)
     .attr("fill", function (d) {
       continent = d.properties.continent
       d.total = data.get(continent) || 0;
-      return colorPalette(d.total);
+      return colorScale(d.total);
     });
 }
 
-async function drawChoro(data, geo, colorScale) {
-  
+async function drawChoro(data, colorScale) {
+  let geo = await d3.json("./dataset/geo_final.geojson");
   let onclick = function (d) {
     let element = d3.select(this);
     element.classed("highlighted", !element.classed("highlighted"));
