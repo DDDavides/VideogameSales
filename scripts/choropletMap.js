@@ -158,7 +158,7 @@ async function drawLegend(colorScale) {
   let legendMargin = { top: height / 2 , right: 0, bottom: 0, left: 20 };
   let legendTicks = 5;
   let legendTickSize = 5;
-  let legendTickFormat = ".0s";
+  let legendTickFormat = (d) => {return d3.format("")(d/1000) + " B";}
 
   d3.select("#first-view")
     .append("g")
@@ -181,12 +181,12 @@ async function drawLegend(colorScale) {
 }
 
 async function drawChoro(sales, colorPalette) {
-  let geo = await d3.json("./dataset/geo_cleaned.geojson");
-
+  let geo = await d3.json("./dataset/geo_final.geojson");
   let data = new Map();
-  // keys = sales[0].keys();
+
   continents = ["NA", "EU", "JP", "Other"];
 
+  // compute total sales for each continent
   sales.forEach(d => {
     for (let i = 0; i < continents.length; i++) {
       let continent = continents[i];
@@ -213,18 +213,18 @@ async function drawChoro(sales, colorPalette) {
     element.classed("highlighted", !element.classed("highlighted"));
   };
 
-
   projection.fitSize([width, height], { type: "FeatureCollection", features: geo.features });
+  
   // Draw the map
   svg.append("g")
     .selectAll("path")
     .data(geo.features)
     .join("path")
-    // draw each country
-    .attr("class", "country")
+    // draw each continent
+    .attr("class", "continent")
     .attr("d", d3.geoPath()
       .projection(projection))
-    // set the color of each country
+    // set the color of each continent
     .attr("fill", function (d) {
       continent = d.properties.continent
       d.total = data.get(continent) || 0;
@@ -232,7 +232,7 @@ async function drawChoro(sales, colorPalette) {
     });
 
 
-  d3.selectAll(".country")
+  d3.selectAll(".continent")
     .on("click", onclick);
 
   drawLegend(colorScale);
