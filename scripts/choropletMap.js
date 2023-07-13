@@ -183,7 +183,6 @@ async function drawLegend(colorScale) {
 
 async function updateChoro(data, colorScale) {
   let geo = await d3.json("./dataset/geo_final.geojson");
-  data.set("Other", 10000);
   
   svg.selectAll(".continent")
     .data(geo.features).transition().duration(500)

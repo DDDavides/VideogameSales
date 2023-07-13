@@ -136,8 +136,7 @@ function filterData(sales) {
     }
     return true;
   });
-  let colorPalette = d3.interpolateGreens;
-  updateChoro(filteredData, colorPalette);
+  updateChoro(filteredData);
 }
 
 function toggleAllYears(toggle) {

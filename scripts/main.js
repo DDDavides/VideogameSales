@@ -34,7 +34,7 @@ async function main() {
 
     drawChoro(data, colorScale);
     drawLegend(colorScale);
-    displayInteractive(sales);
+    displayInteractive(sales, colorScale);
 };
 
 main();
