@@ -2,6 +2,7 @@
     <head>  
         <title>Prova</title>
         <link rel="stylesheet" href="styles/main_style.css">
+        <link rel="stylesheet" href="styles/interaction_bar_style.css"> 
         <link rel="stylesheet" href="styles/choro_style.css">
         <script src="lib/d3.min.js"></script>
         <meta charset="UTF-8">
@@ -10,16 +11,59 @@
         <link href="https://fonts.googleapis.com/css2?family=Cabin&family=Oswald:wght@300&display=swap" rel="stylesheet">
     </head>
     <body class="no-margin no-padding">
+        <div id="main-window">
             <div id="header">
-                <h1 class="title no-margin no-padding disable-select">Videogame Sales</h1>
+                <h1 class="title no-margin no-padding">Videogame Sales</h1>
             </div>
 
             <div class="flex-container" id="dataviz">
                 <svg version="1.1" preserveAspectRatio="none" id="first-view"></svg>
+
+                <div id="interaction-bar" class="horizontal-flex-container">
+                    <div class="box flex-container">
+                        <div class="text">Filter By</div>
+                    </div>
+
+                    <div class="dropdown">
+                        <button onclick="showDropDownToggles('genreDropdown')" class="dropbtn text">Genre</button>
+                        <div id="genreDropdown" class="dropdown-content">
+                            <div class="checkbox">
+                                <input class="base_toggle" checked=true type="checkbox" id="toggleAllGenres" name="toggleAllGenres" onclick="toggleAllGenres(this)">
+                                <label class="text" for="'+d+'">toggle all</label>
+                                <br>
+                            </div>
+                        </div>
+                      </div>
+
+                      <div class="dropdown">
+                        <button onclick="showDropDownToggles('platformDropdown')" class="dropbtn text">Platform</button>
+                        <div id="platformDropdown" class="dropdown-content">
+                            <div class="checkbox">
+                                <input class="base_toggle" checked=true type="checkbox" id="toggleAllPlatforms" name="toggleAllPlatforms" onclick="toggleAllPlatforms(this)">
+                                <label class="text" for="'+d+'">toggle all</label>
+                                <br>
+                            </div>
+                        </div>
+                      </div>
+
+                      <div class="dropdown">
+                        <button onclick="showDropDownToggles('yearDropdown')" class="dropbtn text">Year</button>
+                        <div id="yearDropdown" class="dropdown-content">
+                            <div class="checkbox">
+                                <input class="base_toggle" checked=true type="checkbox" id="toggleAllYears" name="toggleAllYears" onclick="toggleAllYears(this)">
+                                <label class="text" for="'+d+'">toggle all</label>
+                                <br>
+                            </div>
+                        </div>
+                      </div>
+                    
+                </div>
+
                 <svg preserveAspectRatio="xMinYMin none" id="second-view"></svg>
             </div>
-
+        </div>
         <script src="scripts/choropletMap.js"></script>
+        <script src="scripts/interaction.js"></script>
         <script src="scripts/main.js"></script>
     </body>
     

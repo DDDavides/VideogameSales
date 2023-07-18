@@ -19,7 +19,7 @@
     fill-opacity: 1;
 }
 
-.choro-legend {
+#choro-legend {
     font-size: .8em;
     font-family: 'Cabin', sans-serif;
     text-align: center;

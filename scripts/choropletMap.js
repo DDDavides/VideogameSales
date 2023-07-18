@@ -5,12 +5,36 @@ const width = boundingRect.width;
 const height = boundingRect.height;
 
 const continents = ["NA", "EU", "JP", "Other"];
-let colorScale = null;
+let selectedContinents = [];
+let colorPalette = null;
 let geo = null;
 
-function legend({
+const legendWidth = .02 * width;
+const legendHeight = .25 * width;
+const legendMargin = { top: height / 2, right: 0, bottom: 0, left: 20 };
+const legendTicks = 5;
+const legendTickSize = 5;
+const legendTickFormat = (d) => { return d3.format("")(d / 1000) + " B"; }
+
+function tickAdjust(g) {
+  return g.selectAll(".tick line").attr("x1", -legendWidth);
+}
+
+function ramp(color, n = 256) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1;
+  canvas.height = n;
+  const context = canvas.getContext("2d");
+  for (let i = 0; i < n; ++i) {
+    context.fillStyle = color(1 - i / (n - 1));
+    context.fillRect(0, i, 1, 1);
+  }
+  return canvas;
+}
+
+function makeLegend({
+  legend,
   color,
-  title,
   tickSize = 6,
   width = 36 + tickSize,
   height = 320,
@@ -23,123 +47,45 @@ function legend({
   tickValues
 } = {}) {
 
-  function ramp(color, n = 256) {
-    const canvas = document.createElement("canvas");
-    canvas.width = 1;
-    canvas.height = n;
-    const context = canvas.getContext("2d");
-    for (let i = 0; i < n; ++i) {
-      context.fillStyle = color(1 - i / (n - 1));
-      context.fillRect(0, i, 1, 1);
-    }
-    return canvas;
-  }
 
-  const svg = d3.create("svg")
-    .attr("width", width)
+  legend.attr("width", width)
     .attr("height", height)
     .attr("viewBox", [0, 0, width, height])
     .style("overflow", "visible")
     .style("display", "block");
 
   let tickAdjust = g => g.selectAll(".tick line").attr("x1", marginLeft - width + marginRight);
-  let x;
-
-  // Continuous
-  if (color.interpolate) {
-    const n = Math.min(color.domain().length, color.range().length);
-
-    x = color.copy().rangeRound(d3.quantize(d3.interpolate(height - marginBottom, marginTop), n));
-
-    svg.append("image")
-      .attr("x", marginLeft)
-      .attr("y", marginTop)
-      .attr("width", width - marginLeft - marginRight)
-      .attr("height", height - marginTop - marginBottom)
-      .attr("preserveAspectRatio", "none")
-      .attr("xlink:href", ramp(color.copy().domain(d3.quantize(d3.interpolate(0, 1), n))).toDataURL());
-  }
 
   // Sequential
-  else if (color.interpolator) {
-    x = Object.assign(color.copy()
-      .interpolator(d3.interpolateRound(height - marginBottom, marginTop)),
-      { range() { return [height - marginBottom, marginTop]; } });
+  let x = Object.assign(color.copy().interpolator(d3.interpolateRound(height - marginBottom, marginTop)),
+    { range() { return [height - marginBottom, marginTop]; } });
 
-    svg.append("image")
-      .attr("x", marginLeft)
-      .attr("y", marginTop)
-      .attr("width", width - marginLeft - marginRight)
-      .attr("height", height - marginTop - marginBottom)
-      .attr("preserveAspectRatio", "none")
-      .attr("xlink:href", ramp(color.interpolator()).toDataURL());
+  legend.append("image")
+    .attr("x", marginLeft)
+    .attr("y", marginTop)
+    .attr("width", width - marginLeft - marginRight)
+    .attr("height", height - marginTop - marginBottom)
+    .attr("preserveAspectRatio", "none")
+    .attr("xlink:href", ramp(color.interpolator()).toDataURL());
 
-    // scaleSequentialQuantile doesn’t implement ticks or tickFormat.
-    if (!x.ticks) {
-      if (tickValues === undefined) {
-        const n = Math.round(ticks + 1);
-        tickValues = d3.range(n).map(i => d3.quantile(color.domain(), i / (n - 1)));
-      }
-      if (typeof tickFormat !== "function") {
-        tickFormat = d3.format(tickFormat === undefined ? ",f" : tickFormat);
-      }
+  // scaleSequentialQuantile doesn’t implement ticks or tickFormat.
+  if (!x.ticks) {
+    if (tickValues === undefined) {
+      const n = Math.round(ticks + 1);
+      tickValues = d3.range(n).map(i => d3.quantile(color.domain(), i / (n - 1)));
+    }
+    if (typeof tickFormat !== "function") {
+      tickFormat = d3.format(tickFormat === undefined ? ",f" : tickFormat);
     }
   }
 
-  // Threshold
-  else if (color.invertExtent) {
-    const thresholds
-      = color.thresholds ? color.thresholds() // scaleQuantize
-        : color.quantiles ? color.quantiles() // scaleQuantile
-          : color.domain(); // scaleThreshold
 
-    const thresholdFormat
-      = tickFormat === undefined ? d => d
-        : typeof tickFormat === "string" ? d3.format(tickFormat)
-          : tickFormat;
-
-    x = d3.scaleLinear()
-      .domain([-1, color.range().length - 1])
-      .rangeRound([height - marginBottom, marginTop]);
-
-    svg.append("g")
-      .selectAll("rect")
-      .data(color.range())
-      .join("rect")
-      .attr("y", (d, i) => x(i))
-      .attr("x", marginLeft)
-      .attr("height", (d, i) => x(i - 1) - x(i))
-      .attr("width", width - marginRight - marginLeft)
-      .attr("fill", d => d);
-
-    tickValues = d3.range(thresholds.length);
-    tickFormat = i => thresholdFormat(thresholds[i], i);
-  }
-
-  // Ordinal
-  else {
-    x = d3.scaleBand()
-      .domain(color.domain())
-      .rangeRound([height - marginBottom, marginTop]);
-
-    svg.append("g")
-      .selectAll("rect")
-      .data(color.domain())
-      .join("rect")
-      .attr("y", x)
-      .attr("x", marginLeft)
-      .attr("height", Math.max(0, x.bandwidth() - 1))
-      .attr("width", width - marginLeft - marginRight)
-      .attr("fill", color);
-
-    tickAdjust = () => { };
-  }
-
-  svg.append("g")
+  legend.append("g")
     .attr("transform", `translate(${width - marginRight},0)`)
+    .attr("class", "choro-legend-axis")
     .call(d3.axisRight(x)
-      .ticks(ticks, typeof tickFormat === "string" ? tickFormat : undefined)
-      .tickFormat(typeof tickFormat === "function" ? tickFormat : undefined)
+      .ticks(ticks, tickFormat)
+      .tickFormat(tickFormat)
       .tickSize(tickSize)
       .tickValues(tickValues))
     .call(tickAdjust)
@@ -150,10 +96,9 @@ function legend({
       .attr("fill", "currentColor")
       .attr("text-anchor", "start")
       .attr("font-weight", "bold")
-      .attr("class", "title")
-      .text(title));
+      .attr("class", "text"));
 
-  return svg.node();
+  return legend.node();
 }
 
 function computeTotalSales(sales) {
@@ -162,7 +107,7 @@ function computeTotalSales(sales) {
   // compute total sales for each continent
   for (let i = 0; i < sales.length; i++) {
     let sale = sales[i];
-    
+
     // iterate over continents
     for (let j = 0; j < continents.length; j++) {
       let continent = continents[j];
@@ -180,56 +125,76 @@ function computeTotalSales(sales) {
   return data;
 }
 
-async function drawLegend() {
-  let legendWidth = .02 * width;
-  let legendHeight = .25 * width;
-  let legendMargin = { top: height / 2, right: 0, bottom: 0, left: 20 };
-  let legendTicks = 5;
-  let legendTickSize = 5;
-  let legendTickFormat = (d) => { return d3.format("")(d / 1000) + " B"; }
+function computeColorScale(data) {
+  const maximum = d3.max(data.values());
 
-  d3.select("#first-view")
+  return d3.scaleSequential(colorPalette)
+    .domain([0, maximum <= 100 ? 100 : maximum]);
+}
+
+async function drawLegend(colorScale) {
+  var legend = d3.select("#first-view")
     .append("g")
-    .attr("class", "choro-legend disable-select")
-    .append(() => legend({
-      color: colorScale,
-      width: legendWidth,
-      height: legendHeight,
-      marginTop: 0,
-      marginRight: 0,
-      marginBottom: 0,
-      marginLeft: 0,
-      ticks: legendTicks,
-      tickSize: legendTickSize,
-      tickFormat: legendTickFormat
-    }));
+    .attr("id", "choro-legend");
 
-  d3.select("#first-view").selectAll("text").attr("class", "text");
-  d3.select(".choro-legend").attr("transform", `translate(${legendMargin.left},${legendMargin.top})`);
+  makeLegend({
+    legend: legend,
+    color: colorScale,
+    width: legendWidth,
+    height: legendHeight,
+    marginTop: 0,
+    marginRight: 0,
+    marginBottom: 0,
+    marginLeft: 0,
+    ticks: legendTicks,
+    tickSize: legendTickSize,
+    tickFormat: legendTickFormat
+  })
+
+  legend.selectAll("text")
+    .attr("class", "text");
+
+  legend.attr("transform", `translate(${legendMargin.left},${legendMargin.top})`);
 }
 
+async function updateLegend(colorScale) {
 
-async function updateChoro(sales) {
-  data = computeTotalSales(sales);
+  let x = Object.assign(
+    colorScale.copy().interpolator(d3.interpolateRound(legendHeight, 0)),
+    { range() { return [legendHeight, 0]; } });
 
-  svg.selectAll(".continent")
-    .data(geo.features).transition().duration(500)
-    .attr("fill", function (d) {
-      var continent = d.properties.continent
-      d.total = data.get(continent) || 0;
-      return colorScale(d.total);
-    });
+  let axis = d3.select(".choro-legend-axis");
+
+  d3.transition().duration(500).select(".choro-legend-axis")
+    .call(d3.axisRight(x)
+      .ticks(legendTicks, legendTickFormat)
+      .tickFormat(legendTickFormat)
+      .tickSize(legendTickSize))
+    .call(tickAdjust);
+
+  axis.call(g => g.select(".domain").remove());
 }
+
 
 async function drawChoro(sales, map, colors) {
   geo = map;
-  colorScale = colors;
-  
+  colorPalette = colors;
+
   data = computeTotalSales(sales);
+  const colorScale = computeColorScale(data);
+
 
   let onclick = function (d) {
     let element = d3.select(this);
     element.classed("highlighted", !element.classed("highlighted"));
+
+    let continent = element.attr("name");
+
+    if (element.classed("highlighted")) {
+      selectedContinents.push(continent);
+    } else {
+      selectedContinents.splice(selectedContinents.indexOf(continent), 1);
+    }
   };
 
   // Map and projection
@@ -246,16 +211,40 @@ async function drawChoro(sales, map, colors) {
     .attr("d", d3.geoPath()
       .projection(projection))
     // set the color of each continent
+    .attr("name", function (d) {
+      var continent = d.properties.continent
+      return continent;
+    })
     .attr("fill", function (d) {
-      continent = d.properties.continent
+      let continent = d.properties.continent
       d.total = data.get(continent) || 0;
       return colorScale(d.total);
     });
 
-  
+
   // add onclick event
   d3.selectAll(".continent")
     .on("click", onclick);
 
-  drawLegend();
+  drawLegend(colorScale);
 };
+
+function getSelectedContinents() {
+  return selectedContinents;
+}
+
+async function updateChoro(sales) {
+  data = computeTotalSales(sales);
+
+  const colorScale = computeColorScale(data);
+
+  svg.selectAll(".continent")
+    .data(geo.features).transition().duration(500)
+    .attr("fill", function (d) {
+      var continent = d.properties.continent
+      d.total = data.get(continent) || 0;
+      return colorScale(d.total);
+    });
+
+  updateLegend(colorScale);
+}
