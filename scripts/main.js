@@ -4,7 +4,7 @@ async function main() {
 
     // Color scale
     const colorPalette = d3.interpolateGreens;
-    const colorScale = d3.scaleSequential(colorPalette)
+    const colorScale = d3.scaleSequentialLog(colorPalette)
         .domain([1, 5000]);
 
     drawChoro(sales, geo, colorScale);
