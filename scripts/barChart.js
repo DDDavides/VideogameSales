@@ -1,5 +1,9 @@
 // set margin for svg
 const margin = {top: 50, right: 50, bottom: 50, left: 50};
+const svg_continent = d3.select("#div-chosen");
+const boundingRect_continent = svg_continent.node().getBoundingClientRect();
+const vbWidth = boundingRect_continent.width;
+const vbHeight = boundingRect_continent.height;
 
 // TODO: falla responsive
 async function drawChosenContinent(){  
@@ -68,22 +72,23 @@ async function updateBarChart(){
 
 // TODO: la funzione deve prendere qualcosa che le dica quale continente è stato selezionato
 async function updateChosenContinent(){
-  const svgWidth = d3.select("#chosen-continent-view").attr("width")
-  const svgHeight = d3.select("#chosen-continent-view").attr("height")
   svgContinent = d3.select("#chosen-continent-view")
+  const svgWidth = svgContinent.attr("width")
+  const svgHeight = svgContinent.attr("height")
 
   // aggirono il/i continenti visibili accanto al bar chart
   // TODO: CAMBIA QUESTO VALORE CHE NON VA BENE e rendilo dinamico in base alle selezioni
-  let geo = await d3.json("./dataset/other.geojson");
-
+  let geo = await d3.json("./dataset/na.geojson");
+    
   // Map and projection
   let projection = d3.geoMercator()
 
   projection.fitSize([svgWidth, svgHeight], {type:"FeatureCollection", features: geo.features});
   
   // Draw the map
-  svgContinent
+  svgContinent.attr("viewBox", "0 0 " + vbWidth + " " + vbHeight)
     .append("g")
+    .attr("transform", "translate(" + (vbWidth - svgWidth) / 2 + "," + (vbHeight - svgHeight) / 2 + ")")
     .selectAll("path")
     .data(geo.features)
     .join("path")
