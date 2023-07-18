@@ -4,6 +4,9 @@ async function main() {
     // Color scale
     let colorPalette = d3.interpolateGreens;
     drawChoro(sales, colorPalette);
+    drawBarChart();
+    drawChosenContinent();
+    updateChosenContinent();
 };
 
 main();

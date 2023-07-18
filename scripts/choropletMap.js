@@ -3,6 +3,8 @@ const svg = d3.select("#first-view");
 const boundingRect = svg.node().getBoundingClientRect();
 const width = boundingRect.width;
 const height = boundingRect.height;
+const viewBoxWidth = width + 300;
+const viewBoxHeight = height + 300;
 
 async function drawLegend(colorScale) {
   const defs = svg.append("defs")
@@ -18,12 +20,10 @@ async function drawLegend(colorScale) {
     
   linearGradient.attr("gradientTransform", `rotate(-90), translate(-1, 0)`);
   
-  svg.append('g')
+  svg.append("g")
   .append("rect")
     .attr("class", "choro-legend")
-	  .style("fill", "url(#linear-gradient)");
-
-
+	  .style("fill", "url(#linear-gradient)")
 }
 
 async function drawChoro(sales, colorPalette) {
@@ -52,17 +52,21 @@ async function drawChoro(sales, colorPalette) {
   let projection = d3.geoMercator()
     // .scale(width/(Math.PI*2)*0.9*0.7)
     // .center([0, 20])
-    .translate([width / 2, height / 2]);
+    .translate([width, height]);
 
   let onclick = function (d) {
     let element = d3.select(this);
     element.classed("highlighted", !element.classed("highlighted"));
+    // TODO: add the country to the list of selected countries and update the second view
   };
 
 
   projection.fitSize([width, height], {type:"FeatureCollection", features: geo.features});
   // Draw the map
-  svg.append("g")
+  svg.attr("viewBox", "0 0 " + viewBoxWidth + " " + viewBoxHeight)
+    .append("g")
+    // center the map in the svg
+    .attr("transform", "translate(" + (viewBoxWidth - width) / 2 + "," + (viewBoxHeight - height) / 2 + ")")
     .selectAll("path")
     .data(geo.features)
     .join("path")

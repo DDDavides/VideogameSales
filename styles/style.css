@@ -3,14 +3,27 @@ body {
     color: black;
 }
 
-.flex-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+#main-view{
+    width: 100%;
+    height: 90vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
 }
 
-.fill-spaces {
-    flex: 1 1 auto;
+.flex-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    scroll-snap-align: start;
+}
+
+.flex-container-below{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .no-padding {
@@ -43,19 +56,23 @@ body {
     height: 40%;
 }
 
-#dataviz {
-    height: 135vh;
-    width: 100%;
-}
-
 #first-view {
-    flex: 3 1 auto;
-    border-bottom: 2px solid black;
-    border-top: 2px solid black;
+    width: 100%;
+    height: 100%;
 }
 
 #second-view {
-    flex: 1 1 auto;
+    display: flex;
+}
+
+#second-view > svg {
+    width: 50%;
+    height: 100%;
+}
+
+#bar-chart {
+    width: 100%;
+    height: 100%;
 }
 
 .country {
