@@ -34,7 +34,7 @@ function showDropDownToggles(elementId) {
   
   // Close the dropdown menu if the user clicks outside of it
   window.onclick = function(event) {
-    if (!event.target.matches('.dropbtn') && !event.target.matches('.toggle')) {
+    if (!event.target.matches('.dropbtn') && !event.target.matches('.toggle') && !event.target.matches('.base_toggle')) {
         closeMenu();
     }
   }
