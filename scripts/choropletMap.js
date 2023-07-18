@@ -13,10 +13,19 @@ let geo = null;
 
 const legendWidth = .02 * width;
 const legendHeight = .25 * width;
-const legendMargin = { top: height / 2, right: 0, bottom: 0, left: 20 };
+const legendMargin = { top: height / width * 500, right: 0, bottom: 0, left: 20 };
 const legendTicks = 5;
 const legendTickSize = 5;
-const legendTickFormat = (d) => { return d3.format("")(d / 1000) + " B"; }
+const legendTickFormat = (d) => { 
+  if (d < 0.001)
+    return d3.format("")(d * 1000000) + " $";
+  else if (d < 1)
+    return d3.format("")(d * 1000) + " K$";
+  else if (d < 1000) 
+    return d3.format("")(d) + " M$";
+  else
+    return d3.format("")(d / 1000) + " B$"; 
+}
 
 function tickAdjust(g) {
   return g.selectAll(".tick line").attr("x1", -legendWidth);
@@ -106,6 +115,10 @@ function makeLegend({
 function computeTotalSales(sales) {
   let data = new Map();
 
+  for (let i = 0; i < continents.length; i++) {
+    data.set(continents[i], 0);
+  }
+
   // compute total sales for each continent
   for (let i = 0; i < sales.length; i++) {
     let sale = sales[i];
@@ -129,8 +142,9 @@ function computeTotalSales(sales) {
 
 function computeColorScale(data) {
   const maximum = d3.max(data.values());
+
   return d3.scaleSequential(colorPalette)
-    .domain([0, maximum <= 100 ? 100 : maximum]);
+    .domain([0, maximum <= 1 ? 1 : maximum]);
 }
 
 async function drawLegend(colorScale) {
@@ -189,7 +203,7 @@ async function drawChoro(sales, map, colors) {
     let element = d3.select(this);
     element.classed("highlighted", !element.classed("highlighted"));
 
-    let continent = element.attr("name");
+    let continent = element.attr("id");
 
     if (element.classed("highlighted")) {
       selectedContinents.push(continent);
@@ -215,7 +229,7 @@ async function drawChoro(sales, map, colors) {
     .attr("d", d3.geoPath()
       .projection(projection))
     // set the color of each continent
-    .attr("name", function (d) {
+    .attr("id", function (d) {
       var continent = d.properties.continent
       return continent;
     })
