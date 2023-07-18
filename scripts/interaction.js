@@ -26,10 +26,18 @@ function showDropDownToggles(elementId) {
   closeMenu();
   toggles = document.getElementById(elementId);
   toggles.classList.toggle("show");
+
+  let buttonHeight = document.getElementsByClassName("dropbtn")[0].getBoundingClientRect().height;
   // change position of dropdown if it is too close to the bottom of the screen
   if(toggles.getBoundingClientRect().bottom >= window.innerHeight) {
     toggles.style.top = "auto";
-    toggles.style.bottom = "0";
+    toggles.style.bottom = buttonHeight + "px";
+  }
+  let header = document.getElementById("header");
+
+  if(toggles.getBoundingClientRect().top <= header.getBoundingClientRect().bottom) {
+    toggles.style.top = buttonHeight + "px";
+    toggles.style.bottom = "auto";
   }
   
   // Close the dropdown menu if the user clicks outside of it
