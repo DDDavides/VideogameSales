@@ -7,6 +7,9 @@ async function main() {
 
     drawChoro(sales, geo, colorPalette);
     displayInteractive(sales);
+    drawBarChart();
+    drawChosenContinent();
+    updateChosenContinent();
 };
 
 main();

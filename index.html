@@ -11,16 +11,16 @@
         <link href="https://fonts.googleapis.com/css2?family=Cabin&family=Oswald:wght@300&display=swap" rel="stylesheet">
     </head>
     <body class="no-margin no-padding">
-        <div id="main-window">
-            <div id="header">
-                <h1 class="title no-margin no-padding">Videogame Sales</h1>
-            </div>
-
+        <div id="header">
+            <h1 class="title no-margin no-padding">Videogame Sales</h1>
+        </div>
+        <div id="main-view">
+            <!--Vedi di mettere la view box per gestire la visibilità e la grandezza della mappa-->
+            <!--Per allineare gli elementi nell'svg vedi: https://stackoverflow.com/questions/8559964/align-multiple-elements-in-an-svg-container-->
             <div class="flex-container" id="dataviz">
-                <svg version="1.1" preserveAspectRatio="none" id="first-view"></svg>
-
+                <svg id="first-view"></svg>
                 <div id="interaction-bar" class="horizontal-flex-container">
-                    <div class="box flex-container">
+                    <div class="box">
                         <div class="text">Filter By</div>
                     </div>
 
@@ -33,9 +33,9 @@
                                 <br>
                             </div>
                         </div>
-                      </div>
+                    </div>
 
-                      <div class="dropdown">
+                    <div class="dropdown">
                         <button onclick="showDropDownToggles('platformDropdown')" class="dropbtn text">Platform</button>
                         <div id="platformDropdown" class="dropdown-content">
                             <div class="checkbox">
@@ -44,9 +44,9 @@
                                 <br>
                             </div>
                         </div>
-                      </div>
+                    </div>
 
-                      <div class="dropdown">
+                    <div class="dropdown">
                         <button onclick="showDropDownToggles('yearDropdown')" class="dropbtn text">Year</button>
                         <div id="yearDropdown" class="dropdown-content">
                             <div class="checkbox">
@@ -55,14 +55,20 @@
                                 <br>
                             </div>
                         </div>
-                      </div>
-                    
+                    </div>
                 </div>
-
-                <svg preserveAspectRatio="xMinYMin none" id="second-view"></svg>
             </div>
+            <div id="second-view">
+                <div class="flex-container-below" id="div-chosen">
+                    <svg id="chosen-continent-view"></svg>
+                </div>
+                <div class="flex-container-below" id="div-barchart">
+                    <svg id="bar-chart"></svg>
+                </div>
+            </div>  
         </div>
         <script src="scripts/choropletMap.js"></script>
+        <script src="scripts/barChart.js"></script>
         <script src="scripts/interaction.js"></script>
         <script src="scripts/main.js"></script>
     </body>

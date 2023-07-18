@@ -3,6 +3,8 @@ const svg = d3.select("#first-view");
 const boundingRect = svg.node().getBoundingClientRect();
 const width = boundingRect.width;
 const height = boundingRect.height;
+const viewBoxWidth = width;
+const viewBoxHeight = height;
 
 const continents = ["NA", "EU", "JP", "Other"];
 let selectedContinents = [];
@@ -127,7 +129,6 @@ function computeTotalSales(sales) {
 
 function computeColorScale(data) {
   const maximum = d3.max(data.values());
-
   return d3.scaleSequential(colorPalette)
     .domain([0, maximum <= 100 ? 100 : maximum]);
 }
@@ -198,11 +199,14 @@ async function drawChoro(sales, map, colors) {
   };
 
   // Map and projection
-  let projection = d3.geoMercator();
+  let projection = d3.geoMercator().translate([width, height]);
   projection.fitSize([width, height], { type: "FeatureCollection", features: geo.features });
 
   // Draw the map
-  svg.append("g")
+  svg.attr("viewBox", "0 0 " + viewBoxWidth + " " + viewBoxHeight)
+    .append("g")
+    // center the map in the svg
+    .attr("transform", "translate(" + (viewBoxWidth - width) / 2 + "," + (viewBoxHeight - height) / 2 + ")")
     .selectAll("path")
     .data(geo.features)
     .join("path")
@@ -220,7 +224,6 @@ async function drawChoro(sales, map, colors) {
       d.total = data.get(continent) || 0;
       return colorScale(d.total);
     });
-
 
   // add onclick event
   d3.selectAll(".continent")
