@@ -26,7 +26,8 @@
     border: 2px solid black;
     cursor: pointer;
     border-radius: 50px;
-
+    width: 10vw;
+    min-width: 100px;
   }
   
   /* Dropdown button on hover & focus */
@@ -45,10 +46,10 @@
   .dropdown-content {
     display: none;
     position: absolute;
+    width: 100%;
     background-color: white ;
     border: 2px solid black;
-    border-radius: 10px;
-    min-width: 150px;
+    border-radius: 25px;
     z-index: 1;
     padding: 10px 0px 10px 0px;
     height: 300%;
@@ -69,10 +70,10 @@
   .show {
     display: flex;
     flex-direction: column;
-    }
+  }
 
-    .checkbox {
-        justify-content: center;
-        flex-direction: row;
-        margin: 0% 10% 0% 10%;
-    }
+  .checkbox {
+      justify-content: center;
+      flex-direction: row;
+      margin: 0% 10% 0% 10%;
+  }
