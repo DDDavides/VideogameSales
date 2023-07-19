@@ -1,3 +1,7 @@
+function computeContrastColor(hexColor, trashold = .5) {
+  return d3.hsl(hexColor).l > trashold ? "black" : "white";
+}
+
 // The svg
 const svg = d3.select("#first-view");
 const boundingRect = svg.node().getBoundingClientRect();
@@ -6,25 +10,23 @@ const height = boundingRect.height;
 const viewBoxWidth = width;
 const viewBoxHeight = height;
 
-const continents = ["NA", "EU", "JP", "Other"];
-let selectedContinents = [];
-let colorPalette = null;
-let geo = null;
+var selectedContinents = [];
 
 const legendWidth = .02 * width;
 const legendHeight = .25 * width;
 const legendMargin = { top: height / width * 500, right: 0, bottom: 0, left: 20 };
 const legendTicks = 5;
 const legendTickSize = 5;
+
 const legendTickFormat = (d) => { 
   if (d < 0.001)
-    return d3.format("")(d * 1000000) + " $";
+    return d3.format(".2s")(d * 1000000) + " $";
   else if (d < 1)
-    return d3.format("")(d * 1000) + " K$";
+    return d3.format(".2s")(d * 1000) + " K$";
   else if (d < 1000) 
-    return d3.format("")(d) + " M$";
+    return d3.format(".2s")(d) + " M$";
   else
-    return d3.format("")(d / 1000) + " B$"; 
+    return d3.format(".2s")(d / 1000) + " B$"; 
 }
 
 function tickAdjust(g) {
@@ -113,10 +115,10 @@ function makeLegend({
 }
 
 function computeTotalSales(sales) {
-  let data = new Map();
+  let choroData = new Map();
 
   for (let i = 0; i < continents.length; i++) {
-    data.set(continents[i], 0);
+    choroData.set(continents[i], 0);
   }
 
   // compute total sales for each continent
@@ -127,28 +129,75 @@ function computeTotalSales(sales) {
     for (let j = 0; j < continents.length; j++) {
       let continent = continents[j];
 
-      if (!data.has(continent)) {
-        data.set(continent, 0);
+      if (!choroData.has(continent)) {
+        choroData.set(continent, 0);
       }
 
-      let curr_sales = data.get(continent);
+      let curr_sales = choroData.get(continent);
       let new_sales = parseFloat(sale[continent + "_Sales"]);
 
-      data.set(continent, curr_sales + new_sales);
+      choroData.set(continent, curr_sales + new_sales);
     }
   }
-  return data;
+  return choroData;
 }
 
-function computeColorScale(data) {
-  const maximum = d3.max(data.values());
+function computeColorScale(choroData) {
+  const max = d3.max(choroData.values());
 
   return d3.scaleSequential(colorPalette)
-    .domain([0, maximum <= 1 ? 1 : maximum]);
+    .domain([0, max <= 1 ? 1 : max]);
 }
 
+function addTooltip() {
+  let tooltip = d3.select("#dataviz")
+    .append("div")
+    .attr("id", "tooltip");
+    
+  tooltip.classed("hidden", true);
+  
+  tooltip.append("p")
+    .append("span")
+    .attr("id", "category")
+    .classed("text", true)
+    .text("Continent:");
+    
+  tooltip.append("p")
+    .append("span")
+    .attr("id", "value")
+    .classed("text", true)
+    .text("Value");
+}
+
+async function updateTooltip(element, choroData, colorScale) {
+  element = d3.select(element);
+  let continent = element.attr("id");
+
+  let value = choroData.get(continent);
+  let category = translate[continent];
+
+  let tooltip = d3.select("#tooltip");
+  
+  var backgroundColor = colorScale(value);
+  var textColor = computeContrastColor(backgroundColor);
+  
+
+
+  tooltip
+    .style("background-color", backgroundColor)
+    .style("color", textColor);
+
+  tooltip
+    .select("#value")
+    .text("Value: " + legendTickFormat(value));
+  
+  tooltip
+    .select("#category")
+    .text("Continent: " + category);
+};
+
 async function drawLegend(colorScale) {
-  var legend = d3.select("#first-view")
+  let legend = d3.select("#first-view")
     .append("g")
     .attr("id", "choro-legend");
 
@@ -191,12 +240,10 @@ async function updateLegend(colorScale) {
 }
 
 
-async function drawChoro(sales, map, colors) {
-  geo = map;
-  colorPalette = colors;
-
-  data = computeTotalSales(sales);
-  const colorScale = computeColorScale(data);
+async function drawChoro(sales) {
+  addTooltip();
+  choroData = computeTotalSales(sales);
+  const colorScale = computeColorScale(choroData);
 
 
   let onclick = function (d) {
@@ -210,6 +257,28 @@ async function drawChoro(sales, map, colors) {
     } else {
       selectedContinents.splice(selectedContinents.indexOf(continent), 1);
     }
+  };
+
+  let onMouseOver = function(d) {
+    updateTooltip(d.target, choroData, colorScale);
+    d3.select("#tooltip").classed("hidden", false);
+  };
+  
+  let onMouseMove = function(d) {
+    let tooltip = d3.select("#tooltip");
+
+    let tooltipHeight = tooltip.node().getBoundingClientRect().height;
+    let tooltipWidth = tooltip.node().getBoundingClientRect().width;
+
+    let coords = d3.pointer(d, d3.select("body").node());
+    
+    tooltip
+      .style("left",(coords[0] - tooltipWidth) + "px")
+      .style("top", (coords[1] - tooltipHeight) + "px");
+  };
+
+  let onMouseOut = function() { 
+    d3.select("#tooltip").classed("hidden", true);
   };
 
   // Map and projection
@@ -230,18 +299,21 @@ async function drawChoro(sales, map, colors) {
       .projection(projection))
     // set the color of each continent
     .attr("id", function (d) {
-      var continent = d.properties.continent
+      let continent = d.properties.continent
       return continent;
     })
     .attr("fill", function (d) {
       let continent = d.properties.continent
-      d.total = data.get(continent) || 0;
+      d.total = choroData.get(continent) || 0;
       return colorScale(d.total);
     });
 
-  // add onclick event
+  // add interaction events
   d3.selectAll(".continent")
-    .on("click", onclick);
+    .on("click", onclick)
+    .on("mouseover", onMouseOver)
+    .on("mousemove", onMouseMove)
+    .on("mouseout", onMouseOut);
 
   drawLegend(colorScale);
 };
@@ -251,15 +323,15 @@ function getSelectedContinents() {
 }
 
 async function updateChoro(sales) {
-  data = computeTotalSales(sales);
+  choroData = computeTotalSales(sales);
 
-  const colorScale = computeColorScale(data);
+  const colorScale = computeColorScale(choroData);
 
   svg.selectAll(".continent")
     .data(geo.features).transition().duration(500)
     .attr("fill", function (d) {
-      var continent = d.properties.continent
-      d.total = data.get(continent) || 0;
+      let continent = d.properties.continent
+      d.total = choroData.get(continent) || 0;
       return colorScale(d.total);
     });
 
