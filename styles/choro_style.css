@@ -1,12 +1,12 @@
 
-.continent {
+.region {
     stroke-width: .1px;
     stroke: black;
     fill-opacity: 1;
     transition: fill-opacity .2s ease-in-out, stroke-width .2s ease-in-out;
 }
 
-.continent:hover {
+.region:hover {
     cursor: pointer;
     fill-opacity: .85;
 }
