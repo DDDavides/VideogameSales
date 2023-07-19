@@ -216,7 +216,7 @@ async function drawLegend(colorScale) {
   })
 
   legend.selectAll("text")
-    .attr("class", "text");
+    .attr("class", "text disable-select");
 
   legend.attr("transform", `translate(${legendMargin.left},${legendMargin.top})`);
 }
@@ -237,6 +237,10 @@ async function updateLegend(colorScale) {
     .call(tickAdjust);
 
   axis.call(g => g.select(".domain").remove());
+  
+  let legend = d3.select("#choro-legend");
+  legend.selectAll("text")
+    .attr("class", "text disable-select");
 }
 
 
