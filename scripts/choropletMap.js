@@ -152,11 +152,12 @@ function computeColorScale(choroData) {
 function addTooltip() {
   let tooltip = d3.select("#dataviz")
     .append("div")
-    .attr("id", "tooltip");
-    
-  tooltip.classed("hidden", true);
+  tooltip
+    .attr("id", "tooltip")
+    .classed("hidden", true);
   
-  tooltip.append("p")
+  tooltip
+    .append("p")
     .append("span")
     .attr("id", "category")
     .classed("text", true)
@@ -166,7 +167,7 @@ function addTooltip() {
     .append("span")
     .attr("id", "value")
     .classed("text", true)
-    .text("Value");
+    .text("Value: ");
 }
 
 async function updateTooltip(element, choroData, colorScale) {
@@ -265,17 +266,24 @@ async function drawChoro(sales) {
     updateChosenRegions(choroData, selectedRegions);
   };
 
+  let onScroll = function (d) {
+    let element = d3.select("#tooltip");
+    element.classed("hidden", true);
+    // element.classed("disable-hover", true);
+  };
+
   let onMouseOver = function(d) {
     updateTooltip(d.target, choroData, colorScale);
-    d3.select("#tooltip").classed("hidden", false);
   };
   
   let onMouseMove = function(d) {
-    let tooltip = d3.select("#tooltip");
 
+    let tooltip = d3.select("#tooltip");
+    tooltip.classed("hidden", false);
+    
     let tooltipHeight = tooltip.node().getBoundingClientRect().height;
     let tooltipWidth = tooltip.node().getBoundingClientRect().width;
-
+    
     let coords = d3.pointer(d, d3.select("body").node());
     
     tooltip
@@ -320,7 +328,8 @@ async function drawChoro(sales) {
     .on("mouseover", onMouseOver)
     .on("mousemove", onMouseMove)
     .on("mouseout", onMouseOut);
-
+  
+  d3.select("#main-view").on("scroll", onScroll);
   drawLegend(colorScale);
 };
 
