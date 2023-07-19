@@ -145,3 +145,16 @@ function toggleAll(toggle, toggle_name) {
   }
   filterData(allData);
 }
+
+function getToggledGenres() {
+  return genreToggled;
+}
+
+function getToggledPlatforms() {
+  return platformToggled;
+}
+
+function getToggledYears() {
+  return yearToggled;
+}
+
