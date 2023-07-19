@@ -26,3 +26,34 @@
     stroke: black;
     stroke-width: .5px;
 }
+
+.hidden {
+    display: none;
+}
+
+#tooltip {
+	position: absolute;
+	height: auto;
+	width: auto;
+	padding: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	opacity: .95;
+	-moz-border-radius: 10px;
+	-webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	-moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	pointer-events: none;
+	margin-bottom: 3px;
+}
+
+#tooltip.hidden {
+	display: none;
+}
+
+#tooltip p {
+	margin: 0;
+	font-family: "Heebo", sans-serif;
+	font-size: 15px;
+	line-height: 20px;
+}

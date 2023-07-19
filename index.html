@@ -3,6 +3,7 @@
         <title>Prova</title>
         <link rel="stylesheet" href="styles/main_style.css">
         <link rel="stylesheet" href="styles/interaction_bar_style.css"> 
+        <link rel="stylesheet" href="styles/select_style.css">
         <link rel="stylesheet" href="styles/choro_style.css">
         <script src="lib/d3.min.js"></script>
         <meta charset="UTF-8">
@@ -64,12 +65,19 @@
                 </div>
                 <div class="flex-container-below" id="div-barchart">
                     <svg id="bar-chart"></svg>
+                    
+                    <div class="custom-select" style="width:200px;">
+                        <select id="field-select">
+                          <option value="0">Select Field ---</option>
+                        </select>
+                      </div>
                 </div>
             </div>  
         </div>
         <script src="scripts/choropletMap.js"></script>
         <script src="scripts/barChart.js"></script>
         <script src="scripts/interaction.js"></script>
+        <script src="scripts/imported/select_style.js"></script>
         <script src="scripts/main.js"></script>
     </body>
     
