@@ -123,6 +123,7 @@ function filterData(data) {
     return true;
   });
   updateChoro(filteredData);
+  updateBarChart(filteredData);
 }
 
 function toggleAll(toggle, toggle_name) {

@@ -10,6 +10,8 @@ let dataset = Array();
 // struttura seguente {"feature1": {"continent1": #, "continent2": #,...}, ..., "feaetureN": {"continent1": #, "continent2": #,...},
 let tot_genre2continents_sales = {}
 
+// TODO: fai in modo che le feature di tot_genre2continents_sales siano dinamiche in base al bottone (creato da moli) cliccato dall utente
+
 // TODO: falla responsive
 async function drawChosenContinent(){  
   // get the dimension of the div containing the chosen continents
@@ -32,8 +34,8 @@ async function drawBarChart(){
 
   // define axes scale
   // TODO: rendi dinamico il dominio
-  xScale = d3.scaleBand().range([0, svgWidth-margin.right-margin.left]).domain(["Action", "Sports", "Puzzle"]).padding(0.5)
-  yScale = d3.scaleLinear().range([svgHeight-margin.bottom-margin.top,0]).domain([0,23])
+  xScale = d3.scaleBand().range([0, svgWidth-margin.right-margin.left]).domain(Object.keys(tot_genre2continents_sales)).padding(0.5)
+  yScale = d3.scaleLinear().range([svgHeight-margin.bottom-margin.top,0]).domain([0, d3.max(Object.values(tot_genre2continents_sales).map(d => d3.max(Object.values(d))))])
 
   // Scale for subgroup position
   xSubgroup = d3.scaleBand()
@@ -52,9 +54,12 @@ async function drawBarChart(){
 
   // struttura data = {"feature1": {"continent1": #, "continent2": #,...}, ..., "featureN": {"continent1": #, "continent2": #,...},
 
-  tot_genre2continents_sales = {"Action": {"NA": 5, "EU": 1, "JP": 10, "Other": 6}, "Sports": {"NA": 20, "EU": 3, "JP": 10, "Other": 23}, "Puzzle": {"NA": 1, "EU": 10, "JP": 11, "Other": 7}}
+  // tot_genre2continents_sales = {"Action": {"NA": 5, "EU": 1, "JP": 10, "Other": 6}, "Sports": {"NA": 20, "EU": 3, "JP": 10, "Other": 23}, "Puzzle": {"NA": 1, "EU": 10, "JP": 11, "Other": 7}}
+
+  console.log(tot_genre2continents_sales)
   
   // draw bars
+  // TODO: definisci update e remove, capisci come funzionano e capisci l'ordine di chiamata delle funzioni per fare l'update del bar chart
   cartesian.append("g")
           .selectAll("g")
           // tanti gruppi quante sono le features sull'asse x
@@ -91,31 +96,40 @@ async function updateYDomain(yDomain){
 // il dataset mi arriva già filtrato da moli, ma devo raggruppare per continenti selezionati
 async function updateBarChart(dataset){
   // prendi i generi presenti nel dataset
-  let genres = new Set()
+  let genres = getToggledGenres()
+
+  // costruisco la struttura dati che mi serve per visualizzare i dati nel bar chart
   for (let i = 0; i < dataset.length; i++) {
-    genres.add(dataset[i].Genre)
+    current_genre = dataset[i].Genre
+    // giochi1 genere1 na jp eu other 
+    // {genere1: {na: 0, jp: 0, eu: 0, other: 0}, genere2: {...}}
     // se il genere non è presente come chiave, inizializzao il valore 
-    if(!tot_genre2continents_sales.hasOwnProperty(dataset[i].Genre)){
-      tot_genre2continents_sales[dataset[i].Genre] = {"NA": 0, "EU": 0, "JP": 0, "Other": 0}
+    if(!tot_genre2continents_sales.hasOwnProperty(current_genre)){
+      tot_genre2continents_sales[current_genre] = {}
+      for (let j = 0; j < chosen_continents.length; j++) {
+        // inizializzo, per il genere corrente e il continente corrente, col valore presente nel record corrente
+        tot_genre2continents_sales[current_genre][chosen_continents[j]] = parseFloat(dataset[i][chosen_continents[j] + "_Sales"])
+      }
     }
     // altrimenti aggiorno, per ogni continente, i valori esistenti
-    // TODO: potrei aggiornare solo i continetni che mi servono
     else{
-      tot_genre2continents_sales[dataset[i].Genre]["NA"] += parseFloat(dataset[i]["NA_Sales"])
-      tot_genre2continents_sales[dataset[i].Genre]["EU"] += parseFloat(dataset[i]["EU_Sales"])
-      tot_genre2continents_sales[dataset[i].Genre]["JP"] += parseFloat(dataset[i]["JP_Sales"])
-      tot_genre2continents_sales[dataset[i].Genre]["Other"] += parseFloat(dataset[i]["Other_Sales"])
+      for (let j = 0; j < chosen_continents.length; j++) {
+        tot_genre2continents_sales[current_genre][chosen_continents[j]] += parseFloat(dataset[i][chosen_continents[j] + "_Sales"])
+      }
     }
   }
 
   // di default il dominio dell'asse x è mappato con i generi
-  // updateXDomain(genres)
+  updateXDomain(genres)
 
   // aggiorna le barre che saranno visualizzate per ogni genere (una per continente scelto)
   updateXSubgroupDomain(chosen_continents)
 
   // aggiorno il dominio dell'asse y
   updateYDomain([0, d3.max(Object.values(tot_genre2continents_sales).map(d => d3.max(Object.values(d))))])
+
+  // redraw bars
+  drawBarChart()
 }
 
 // TODO: la funzione deve prendere qualcosa che le dica quale continente è stato selezionato
