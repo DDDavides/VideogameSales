@@ -10,6 +10,7 @@ async function main() {
     drawBarChart();
     drawChosenContinent();
     updateChosenContinent();
+    // updateBarChart(sales);
 };
 
 main();
