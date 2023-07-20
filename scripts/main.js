@@ -1,7 +1,7 @@
 var geo = null;
 var colorPalette = d3.interpolateGreens;
 
-const continents = ["NA", "EU", "JP", "Other"];
+const regions = ["NA", "EU", "JP", "Other"];
 const translate = {
   "NA": "North America",
   "EU": "Europe",
@@ -19,7 +19,8 @@ async function main() {
     displayInteractive(sales);
     drawBarChart();
     drawChosenContinent();
-    updateChosenContinent();
+    updateChosenRegions();
+    updateBarChart(sales);
     initSelect();
 };
 

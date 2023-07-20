@@ -1,7 +1,3 @@
-function computeContrastColor(hexColor, trashold = .5) {
-  return d3.hsl(hexColor).l > trashold ? "black" : "white";
-}
-
 // The svg
 const svg = d3.select("#first-view");
 const boundingRect = svg.node().getBoundingClientRect();
@@ -10,7 +6,7 @@ const height = boundingRect.height;
 const viewBoxWidth = width;
 const viewBoxHeight = height;
 
-var selectedContinents = [];
+var selectedRegions = [];
 
 const legendWidth = .02 * width;
 const legendHeight = .25 * width;
@@ -27,6 +23,10 @@ const legendTickFormat = (d) => {
     return d3.format(".2s")(d) + " M$";
   else
     return d3.format(".2s")(d / 1000) + " B$"; 
+}
+
+function computeContrastColor(hexColor, trashold = .5) {
+  return d3.hsl(hexColor).l > trashold ? "black" : "white";
 }
 
 function tickAdjust(g) {
@@ -117,26 +117,26 @@ function makeLegend({
 function computeTotalSales(sales) {
   let choroData = new Map();
 
-  for (let i = 0; i < continents.length; i++) {
-    choroData.set(continents[i], 0);
+  for (let i = 0; i < regions.length; i++) {
+    choroData.set(regions[i], 0);
   }
 
-  // compute total sales for each continent
+  // compute total sales for each region
   for (let i = 0; i < sales.length; i++) {
     let sale = sales[i];
 
-    // iterate over continents
-    for (let j = 0; j < continents.length; j++) {
-      let continent = continents[j];
+    // iterate over regions
+    for (let j = 0; j < regions.length; j++) {
+      let region = regions[j];
 
-      if (!choroData.has(continent)) {
-        choroData.set(continent, 0);
+      if (!choroData.has(region)) {
+        choroData.set(region, 0);
       }
 
-      let curr_sales = choroData.get(continent);
-      let new_sales = parseFloat(sale[continent + "_Sales"]);
+      let curr_sales = choroData.get(region);
+      let new_sales = parseFloat(sale[region + "_Sales"]);
 
-      choroData.set(continent, curr_sales + new_sales);
+      choroData.set(region, curr_sales + new_sales);
     }
   }
   return choroData;
@@ -152,29 +152,30 @@ function computeColorScale(choroData) {
 function addTooltip() {
   let tooltip = d3.select("#dataviz")
     .append("div")
-    .attr("id", "tooltip");
-    
-  tooltip.classed("hidden", true);
+  tooltip
+    .attr("id", "tooltip")
+    .classed("hidden", true);
   
-  tooltip.append("p")
+  tooltip
+    .append("p")
     .append("span")
     .attr("id", "category")
     .classed("text", true)
-    .text("Continent:");
+    .text("Region:");
     
   tooltip.append("p")
     .append("span")
     .attr("id", "value")
     .classed("text", true)
-    .text("Value");
+    .text("Value: ");
 }
 
 async function updateTooltip(element, choroData, colorScale) {
   element = d3.select(element);
-  let continent = element.attr("id");
+  let region = element.attr("id");
 
-  let value = choroData.get(continent);
-  let category = translate[continent];
+  let value = choroData.get(region);
+  let category = translate[region];
 
   let tooltip = d3.select("#tooltip");
   
@@ -193,7 +194,7 @@ async function updateTooltip(element, choroData, colorScale) {
   
   tooltip
     .select("#category")
-    .text("Continent: " + category);
+    .text("Region: " + category);
 };
 
 async function drawLegend(colorScale) {
@@ -254,26 +255,35 @@ async function drawChoro(sales) {
     let element = d3.select(this);
     element.classed("highlighted", !element.classed("highlighted"));
 
-    let continent = element.attr("id");
+    let region = element.attr("id");
 
     if (element.classed("highlighted")) {
-      selectedContinents.push(continent);
+      selectedRegions.push(region);
     } else {
-      selectedContinents.splice(selectedContinents.indexOf(continent), 1);
+      selectedRegions.splice(selectedRegions.indexOf(region), 1);
     }
+
+    updateChosenRegions(choroData, selectedRegions);
+  };
+
+  let onScroll = function (d) {
+    let element = d3.select("#tooltip");
+    element.classed("hidden", true);
+    // element.classed("disable-hover", true);
   };
 
   let onMouseOver = function(d) {
     updateTooltip(d.target, choroData, colorScale);
-    d3.select("#tooltip").classed("hidden", false);
   };
   
   let onMouseMove = function(d) {
-    let tooltip = d3.select("#tooltip");
 
+    let tooltip = d3.select("#tooltip");
+    tooltip.classed("hidden", false);
+    
     let tooltipHeight = tooltip.node().getBoundingClientRect().height;
     let tooltipWidth = tooltip.node().getBoundingClientRect().width;
-
+    
     let coords = d3.pointer(d, d3.select("body").node());
     
     tooltip
@@ -297,33 +307,34 @@ async function drawChoro(sales) {
     .selectAll("path")
     .data(geo.features)
     .join("path")
-    // draw each continent
-    .attr("class", "continent")
+    // draw each region
+    .attr("class", "region")
     .attr("d", d3.geoPath()
       .projection(projection))
-    // set the color of each continent
+    // set the color of each region
     .attr("id", function (d) {
-      let continent = d.properties.continent
-      return continent;
+      let region = d.properties.continent
+      return region;
     })
     .attr("fill", function (d) {
-      let continent = d.properties.continent
-      d.total = choroData.get(continent) || 0;
+      let region = d.properties.continent
+      d.total = choroData.get(region) || 0;
       return colorScale(d.total);
     });
 
   // add interaction events
-  d3.selectAll(".continent")
+  d3.selectAll(".region")
     .on("click", onclick)
     .on("mouseover", onMouseOver)
     .on("mousemove", onMouseMove)
     .on("mouseout", onMouseOut);
-
+  
+  d3.select("#main-view").on("scroll", onScroll);
   drawLegend(colorScale);
 };
 
-function getSelectedContinents() {
-  return selectedContinents;
+function getselectedRegions() {
+  return selectedRegions;
 }
 
 async function updateChoro(sales) {
@@ -331,11 +342,11 @@ async function updateChoro(sales) {
 
   const colorScale = computeColorScale(choroData);
 
-  svg.selectAll(".continent")
+  svg.selectAll(".region")
     .data(geo.features).transition().duration(500)
     .attr("fill", function (d) {
-      let continent = d.properties.continent
-      d.total = choroData.get(continent) || 0;
+      let region = d.properties.continent
+      d.total = choroData.get(region) || 0;
       return colorScale(d.total);
     });
 

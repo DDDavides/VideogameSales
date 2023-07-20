@@ -1,34 +1,37 @@
-
-.continent {
-    stroke-width: .1px;
-    stroke: black;
-    fill-opacity: 1;
-    transition: fill-opacity .2s ease-in-out, stroke-width .2s ease-in-out;
+.region {
+	stroke-width: .1px;
+	stroke: black;
+	fill-opacity: 1;
+	transition: fill-opacity .2s ease-in-out, stroke-width .2s ease-in-out;
 }
 
-.continent:hover {
-    cursor: pointer;
-    fill-opacity: .85;
+.region:hover {
+	cursor: pointer;
+	fill-opacity: .85;
 }
 
 
 .highlighted {
-    fill-opacity: .85;
-    stroke-width: 1px;
-    transition: stroke-width .2s ease-in-out, fill-opacity .2s ease-in-out;
-    fill-opacity: 1;
+	fill-opacity: .85;
+	stroke-width: 1px;
+	transition: stroke-width .2s ease-in-out, fill-opacity .2s ease-in-out;
+	fill-opacity: 1;
 }
 
 #choro-legend {
-    font-size: .8em;
-    font-family: 'Cabin', sans-serif;
-    text-align: center;
-    stroke: black;
-    stroke-width: .5px;
+	font-size: .8em;
+	font-family: 'Cabin', sans-serif;
+	text-align: center;
+	stroke: black;
+	stroke-width: .5px;
 }
 
 .hidden {
-    display: none;
+	display: none;
+}
+
+.disable-hover {
+	pointer-events: none;
 }
 
 #tooltip {
