@@ -20,14 +20,22 @@
 }
 /* Dropdown Button */
 .dropbtn {
-    background-color: white;
+    background-color: rgb(223, 223, 223);
     padding: 12px;
     font-size: 16px;
-    border: 2px solid black;
+    border: 0px solid black;
     cursor: pointer;
-    border-radius: 50px;
+    border-radius: 10px;
     width: 10vw;
     min-width: 100px;
+  }
+
+  .round-edge-with-shadow {
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
   }
   
   /* Dropdown button on hover & focus */

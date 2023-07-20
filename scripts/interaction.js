@@ -157,4 +157,3 @@ function getToggledPlatforms() {
 function getToggledYears() {
   return yearToggled;
 }
-
