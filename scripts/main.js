@@ -19,7 +19,7 @@ async function main() {
     displayInteractive(sales);
     drawBarChart();
     drawChosenContinent();
-    updateChosenRegions();
+    // updateChosenRegions();
     updateBarChart(sales);
     initSelect();
 };

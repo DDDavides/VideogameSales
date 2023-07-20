@@ -1,24 +1,15 @@
-
 /*the container must be positioned relative:*/
 .custom-select {
   position: relative;
   font-family: Arial;
+  width: 10vw;
+  min-width: 150px;
 }
 
 
 .custom-select select {
-  display: none; /*hide original SELECT element:*/
-}
-
-.select-selected {
-  background-color: white;
-  border: 2px solid black;
-border-radius: 50px;
-}
-
-.select-selected:hover {
-  background-color: black;
-  color: white;
+  display: none;
+  /*hide original SELECT element:*/
 }
 
 /*style the arrow inside the select element:*/
@@ -38,8 +29,10 @@ border-radius: 50px;
 }
 
 /*style the items (options), including the selected item:*/
-.select-items div,.select-selected {
-  padding: 8px 16px;
+.select-items div,
+.select-selected {
+  padding: 16px 16px;
+  text-align: center;
   cursor: pointer;
   user-select: none;
 }
@@ -47,22 +40,14 @@ border-radius: 50px;
 /*style items (options):*/
 .select-items {
   position: absolute;
-    background-color: white;
-    color: black;
-    border: 2px solid black;
-    border-radius: 20px;
-  top: -285%;
+  background-color: rgb(223, 223, 223);
+  width: 100%;
+  color: black;
   left: 0;
   right: 0;
   z-index: 99;
   overflow: hidden;
 }
-
-.select-item:hover, .same-as-selected {
-  background-color: black;
-  color: white;
-} 
-
 /*hide the items when the select box is closed:*/
 .select-hide {
   display: none;

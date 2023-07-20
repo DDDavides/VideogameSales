@@ -154,7 +154,8 @@ function addTooltip() {
     .append("div")
   tooltip
     .attr("id", "tooltip")
-    .classed("hidden", true);
+    .classed("hidden", true)
+    .classed("round-edge-with-shadow", true);
   
   tooltip
     .append("p")

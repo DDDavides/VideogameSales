@@ -17,17 +17,18 @@ function initSelect() {
     ll = selElmnt.length;
     /* For each element, create a new DIV that will act as the selected item: */
     a = document.createElement("DIV");
-    a.setAttribute("class", "select-selected");
+    a.setAttribute("class", "select-selected round-edge-with-shadow btn-style btn-anim");
+    
     a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
     x[i].appendChild(a);
     /* For each element, create a new DIV that will contain the option list: */
     b = document.createElement("DIV");
-    b.setAttribute("class", "select-items select-hide");
+    b.setAttribute("class", "select-items select-hide round-edge-with-shadow btn-style");
     for (j = 1; j < ll; j++) {
       /* For each option in the original select element,
       create a new DIV that will act as an option item: */
       c = document.createElement("DIV");
-      c.setAttribute("class", "select-item");
+      c.setAttribute("class", "select-item btn-anim");
       c.innerHTML = selElmnt.options[j].innerHTML;
       c.addEventListener("click", function(e) {
         /* When an item is clicked, update the original select box,
@@ -45,7 +46,7 @@ function initSelect() {
             for (k = 0; k < yl; k++) {
               y[k].setAttribute("class", "select-item");
             }
-            this.setAttribute("class", "same-as-selected select-item");
+            this.setAttribute("class", "same-as-selected select-item" );
             break;
           }
         }
@@ -53,6 +54,10 @@ function initSelect() {
       });
       b.appendChild(c);
     }
+    let aHeight = a.getBoundingClientRect().height;
+
+    b.style.bottom = aHeight + "px";
+    console.log(b.style.bottom + " " + b.style.top);
     x[i].appendChild(b);
     a.addEventListener("click", function(e) {
       /* When the select box is clicked, close any other select boxes,

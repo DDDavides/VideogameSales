@@ -73,19 +73,19 @@ function displayInteractive(sales) {
   // display the genres, platforms and years in the dropdown menus
   checkboxContainer = document.getElementById("genreDropdown");
   genres.forEach(d => {
-    checkboxContainer.innerHTML += '<div class="checkbox"><input checked=true class="toggle" type="checkbox" id="' + d + '" name="genre" value="' + d + '"><label class="text" for="' + d + '">' + d + '</label><br></div>';
+    checkboxContainer.innerHTML += '<label class="checkbox form-control"><input checked=true class="toggle" type="checkbox" id="' + d + '" name="genre" value="' + d + '"> ' + d + '</label>';
   });
   genreToggled = new Set(genres);
 
   checkboxContainer = document.getElementById("platformDropdown");
   platforms.forEach(d => {
-    checkboxContainer.innerHTML += '<div class="checkbox"><input checked=true class="toggle" type="checkbox" id="' + d + '" name="platform" value="' + d + '"><label class="text" for="' + d + '">' + d + '</label><br></div>';
+    checkboxContainer.innerHTML += '<label class="checkbox form-control"><input checked=true class="toggle" type="checkbox" id="' + d + '" name="platform" value="' + d + '"> ' + d + '</label>';
   });
   platformToggled = new Set(platforms);
 
   checkboxContainer = document.getElementById("yearDropdown");
   years.forEach(d => {
-    checkboxContainer.innerHTML += '<div class="checkbox"><input checked=true class="toggle" type="checkbox" id="' + d + '" name="year" value="' + d + '"><label class="text" for="' + d + '">' + d + '</label><br></div>';
+    checkboxContainer.innerHTML += '<label class="checkbox form-control"><input checked=true class="toggle" type="checkbox" id="' + d + '" name="year" value="' + d + '"> ' + d + '</label>';
   });
   yearToggled = new Set(years);
 
