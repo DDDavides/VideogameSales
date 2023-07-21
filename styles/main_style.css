@@ -137,11 +137,12 @@ input[type="checkbox"] {
     display: grid;
     place-content: center;
   }
-.form-control + .form-control {
+.form-control {
     margin-top: 1em;
     line-height: 1.1;
     display: grid;
     grid-template-columns: 1em auto;
+    padding: 0.5em;
     gap: 0.5em;
   }
 

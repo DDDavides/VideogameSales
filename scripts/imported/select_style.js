@@ -44,9 +44,9 @@ function initSelect() {
             y = this.parentNode.getElementsByClassName("same-as-selected");
             yl = y.length;
             for (k = 0; k < yl; k++) {
-              y[k].setAttribute("class", "select-item");
+              y[k].setAttribute("class", "select-item btn-anim");
             }
-            this.setAttribute("class", "same-as-selected select-item" );
+            this.setAttribute("class", "same-as-selected select-item btn-anim" );
             break;
           }
         }

@@ -72,6 +72,7 @@ function displayInteractive(sales) {
 
   // display the genres, platforms and years in the dropdown menus
   checkboxContainer = document.getElementById("genreDropdown");
+
   genres.forEach(d => {
     checkboxContainer.innerHTML += '<label class="checkbox form-control"><input checked=true class="toggle" type="checkbox" id="' + d + '" name="genre" value="' + d + '"> ' + d + '</label>';
   });
