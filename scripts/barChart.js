@@ -5,10 +5,31 @@ const boundingRect_continent = svg_continent.node().getBoundingClientRect();
 const vbWidth = boundingRect_continent.width;
 const vbHeight = boundingRect_continent.height;
 let chosen_continents = [];
-let db = Array();
-// struttura seguente {"feature1": {"continent1": #, "continent2": #,...}, ..., "feaetureN": {"continent1": #, "continent2": #,...},
-// TODO: d3.map o d3.nest
-let tot_feature2continents_sales = {};
+let db = [];
+
+svgBarChart = d3.select("#bar-chart")
+svgWidth = svgBarChart.node().getBoundingClientRect().width
+svgHeight = svgBarChart.node().getBoundingClientRect().height
+
+// define axes scale
+// TODO: metti domain(["genres"]) per vedere cosa succede
+xScale = d3.scaleBand().range([0, svgWidth-margin.right-margin.left]).padding(0.1)
+yScale = d3.scaleLinear().range([svgHeight-margin.bottom-margin.top,0])
+
+// Scale for subgroup position
+xSubgroup = d3.scaleBand()
+              .domain(chosen_continents)
+              .range([0, xScale.bandwidth()])
+              .padding(0.05)
+
+// define axes
+xAxis = d3.axisBottom().scale(xScale)
+yAxis = d3.axisLeft().scale(yScale)
+
+// TODO: cambia font
+// svgBarChart.selectAll("text").attr("class", "text")
+
+cartesian = svgBarChart.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 async function drawChosenRegions(){  
   // get the dimension of the div containing the chosen continents
@@ -24,62 +45,16 @@ async function drawChosenRegions(){
     .attr("height", svgHeight);
 }
 
-async function drawBarChart(){
-  const svgBarChart = d3.select("#bar-chart")
-  svgWidth = svgBarChart.node().getBoundingClientRect().width
-  svgHeight = svgBarChart.node().getBoundingClientRect().height
-
+async function drawBarChart(sales){
+  db = sales
   // di default il dominio dell'asse x è mappato con i generi selezionati
-  toggled_genres = getToggledGenres()
-
-  // define axes scale
-  // TODO: metti domain(["genres"]) per vedere cosa succede
-  xScale = d3.scaleBand().range([0, svgWidth-margin.right-margin.left]).domain(toggled_genres).padding(0.5)
-  yScale = d3.scaleLinear().range([svgHeight-margin.bottom-margin.top,0])
-
-  // Scale for subgroup position
-  xSubgroup = d3.scaleBand()
-                .domain(chosen_continents)
-                .range([0, xScale.bandwidth()])
-                .padding([0.05])
-
-  // define axes
-  xAxis = d3.axisBottom().scale(xScale)
-  yAxis = d3.axisLeft().scale(yScale)
-
-  // TODO: cambia font
-  // svgBarChart.selectAll("text").attr("class", "text")
+  toggled_genres = allGenres
+  xScale.domain(toggled_genres)
+  xSubgroup.domain(chosen_continents)
 
   // draw axes
-  cartesian = svgBarChart.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   cartesian.append("g").attr("class","x-axis").attr("transform", `translate(0, ${svgHeight - margin.top - margin.bottom})`).call(xAxis)
   cartesian.append("g").attr("class","y-axis").call(yAxis);
-
-  dataGroup = cartesian.append("g")
-
-  //===========================DRAW BAR CHART================================
-  // BAR GROUP
-  // un gruppo per feature (valori asse x)
-  barGroup = dataGroup.selectAll("g")
-                      .data(genres)
-
-  // Enter
-  barGroup.enter().append("g")
-          .attr("class", "feature_group")
-          .attr("transform", function(d) { return "translate(" + xScale(d) + ",0)"; })
-
-  // SINGLE BAR
-  // tanti rettangoli quanti sono i continenti scelti
-  dataRects = barGroup.selectAll("rect")
-                      .data(function(d) { return chosen_continents.map(function(key) { return {key: key, value: tot_feature2continents_sales[d][key]}; }); }) 
-
-  // Enter
-  dataRects.enter().append("rect")
-           .attr("class", "bar")
-           .attr("x", function(d) { return xSubgroup(d.key); })
-           .attr("y", function(d) { return yScale(d.value); })
-           .attr("width", xSubgroup.bandwidth())
-           .attr("height", function(d) { return svgHeight - margin.top - margin.bottom - yScale(d.value); })
 }
 
 async function updateXDomain(xDomain){
@@ -110,12 +85,17 @@ async function updateYDomain(yDomain){
 // RISOLTO: Togliendo .append("g") ogni volta che definivo barGroup
 
 // BUG 5: Se seleziono un continente, poi tolgo e rimetto un genere, il dato relativo a quel genere non viene visualizzato
-
 async function updateBarChart(dataset){
   db = dataset
   // BRUTALE: ogni volta che richiamo updateBarChart cancello e poi ricalcolo tutto
   // TODO: trova un modo per fare in modo che non venga ricalcolato tutto ogni volta
-  tot_feature2continents_sales = {}
+  //        [
+  //          { feature1: "", 
+  //            regions2sales: [{regionName: "", regionSales: #}, ...]
+  //          }, 
+  //          ...
+  //        ]
+  tot_feature2continents_sales = []
 
   // prendi i generi presenti nel dataset
   toggled_genres = getToggledGenres()
@@ -124,70 +104,83 @@ async function updateBarChart(dataset){
   // TODO: usa d3.js map o nest (Quando faccio il get, riporta una copia del valore o il puntatore ad esso?)
   for (let i = 0; i < dataset.length; i++) {
     current_genre = dataset[i].Genre
-
-    // se il genere non è presente come chiave, inizializzao il valore
-    if(!tot_feature2continents_sales.hasOwnProperty(current_genre)){
-      tot_feature2continents_sales[current_genre] = {}
+    currData = tot_feature2continents_sales.find(d => d["Genre"] == current_genre)
+    // se il genere è già presente aggiorno, per ogni continente, i valori esistenti
+    if( currData != undefined){
       for (let j = 0; j < chosen_continents.length; j++) {
-        // inizializzo, per il genere corrente e il continente corrente, col valore presente nel record corrente
-        tot_feature2continents_sales[current_genre][chosen_continents[j]] = parseFloat(dataset[i][chosen_continents[j] + "_Sales"])
+        name2sale = currData["regions2sales"].find(d => d["regionName"] == chosen_continents[j])
+        // se il continente è già presente aggiorno il valore
+        if(name2sale != undefined){
+          name2sale["regionSales"] += parseFloat(dataset[i][chosen_continents[j] + "_Sales"])
+        }
+        // altrimenti lo inizializzo
+        else{
+          currData["regions2sales"].push({"regionName": chosen_continents[j], "regionSales": parseFloat(dataset[i][chosen_continents[j] + "_Sales"])})
+        }
       }
     }
-    // altrimenti aggiorno, per ogni continente, i valori esistenti
+    // altrimenti inizializzo il genere
     else{
+      // mette in coda questo elemento
+      tot_feature2continents_sales.push({"Genre": current_genre, "regions2sales": []})
       for (let j = 0; j < chosen_continents.length; j++) {
-        tot_feature2continents_sales[current_genre][chosen_continents[j]] += parseFloat(dataset[i][chosen_continents[j] + "_Sales"])
+        // quindi inizializzo l'ultimo valore appena inserito
+        tot_feature2continents_sales[tot_feature2continents_sales.length-1]["regions2sales"].push({"regionName": chosen_continents[j], "regionSales": parseFloat(dataset[i][chosen_continents[j] + "_Sales"])})
       }
     }
   }
 
-  console.log(tot_feature2continents_sales)
+  //console.log(tot_feature2continents_sales)
 
   // di default il dominio dell'asse x è mappato con i generi
-  await updateXDomain(toggled_genres)
+  await updateXDomain(tot_feature2continents_sales.map(d => d.Genre))
 
   // aggiorna le barre che saranno visualizzate per ogni genere (una per continente scelto)
   await updateXSubgroup(chosen_continents)
 
   // aggiorno il dominio dell'asse y
-  await updateYDomain([0, d3.max(Object.values(tot_feature2continents_sales).map(d => d3.max(Object.values(d))))])
+  await updateYDomain([0, d3.max(tot_feature2continents_sales, d => d3.max(d.regions2sales, d => d.regionSales))])
 
-  //===========================REDRAW BAR CHART================================
+  //===========================DRAW BAR CHART================================
   // BAR GROUP
   // Data join: un gruppo per feature (valori asse x)
-  barGroup = dataGroup.selectAll("g")
-                      // TODO: deve diventare una feature qualsiasi, scelta dall'utente
-                      .data(toggled_genres)
-
-  // Enter 
+  barGroup = cartesian.selectAll(".feature_group")
+                      .data(tot_feature2continents_sales)
+  // Enter
   barGroup.enter().append("g")
-          .attr("class", "feature_group")
-          .attr("transform", function(d) { return "translate(" + (xScale(d)) + ",0)"; })
-  // Update
-  barGroup.transition().duration(1000).attr("transform", function(d) { return "translate(" + (xScale(d)) + ",0)"; })
+                  .attr("class", "feature_group")
+                  .attr("id", d => d.Genre)
+                  .attr("transform", function(d) { return "translate(" + xScale(d.Genre) + ",0)"; })
   // Exit
-  barGroup.exit().remove()
+  barGroup.filter(function(d){console.log("Esce ", d.Genre); return d.Genre}).exit().remove()
+  console.log(barGroup)
 
   // SINGLE BAR
-  // Data join: tanti rettangoli quanti sono i continenti scelti
+  // tanti rettangoli quanti sono i continenti scelti
   dataRects = barGroup.selectAll("rect")
-                      .data(function(d) { return chosen_continents.map(function(key) { return {key: key, value: tot_feature2continents_sales[d][key]}; }); }) 
+                      .data(function(d) { return d.regions2sales}) // data = [{regionName: "", regionSales: #}, ...]
 
-  // Enter
+  // Enter: append a new rect every time we have an extra data vs dom element
   dataRects.enter().append("rect")
-           .attr("class", "bar")
-           .attr("x", function(d) { return xSubgroup(d.key); })
-           .attr("y", function(d) { return yScale(d.value); })
+           .attr("id", d => d.regionName)
+           .attr("x", function(d) { 
+                // console.log("regionName ", d.regionName); 
+                // console.log("xSubgroup ", xSubgroup(d.regionName));
+                return xSubgroup(d.regionName); })
+           .attr("y", function(d) { return yScale(d.regionSales); })
            .attr("width", xSubgroup.bandwidth())
-           .attr("height", function(d) { return svgHeight - margin.top - margin.bottom - yScale(d.value); })
-  // Update
-  dataRects.transition().duration(500)
-            .attr("x", function(d) { return xSubgroup(d.key); })
-            .attr("y", function(d) { return yScale(d.value); })
+           .attr("height", function(d) { return svgHeight - margin.top - margin.bottom - yScale(d.regionSales); })
+           
+
+  // Update: updates will happend neither inserting new elements or updating them
+  // TODO: CONTROLLA QUESTO
+  dataRects.attr("x", function(d) { return xSubgroup(d.regionName); })
+            .attr("y", function(d) { return yScale(d.regionSales); })
             .attr("width", xSubgroup.bandwidth())
-            .attr("height", function(d) { return svgHeight - margin.top - margin.bottom - yScale(d.value); })
+            .attr("height", function(d) { return svgHeight - margin.top - margin.bottom - yScale(d.regionSales); })
+
   // Exit
-  dataRects.exit().remove()
+  dataRects.exit().transition().attr("height", 0).remove()
 }
 
 // funzione aggiorna le regioni che sono state selezionate nella prima view
@@ -201,6 +194,8 @@ async function updateChosenRegions(selectedRegions){
   // TODO: potrei avere problemi con l'async, magari finisce prima l'aggiornamento al bar char quindi non visualizzo bene i dati
   chosen_continents = selectedRegions;
   // TODO: devo passare i dati corretti
+  // TODO: controlla cosa succede ai generi
+  // BUG: Se come prima cosa clicco su una regione spariscono i generi nel bar chart
   updateBarChart(db);
 
   let svgContinent = d3.select("#chosen-continent-view")

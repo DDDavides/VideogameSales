@@ -1,4 +1,5 @@
 var geo = null;
+var sales = null;
 var colorPalette = d3.interpolateGreens;
 
 const regions = ["NA", "EU", "JP", "Other"];
@@ -8,16 +9,18 @@ const translate = {
   "JP": "Japan",
   "Other": "Other"
 }
+const allGenres = ["Action", "Adventure", "Fighting", "Misc", "Platform", "Puzzle", "Racing", "Role-Playing", "Shooter", "Simulation", "Sports", "Strategy"];
 
 async function main() {
-    let sales = await d3.csv("./dataset/vgsales.csv");
+    sales = await d3.csv("./dataset/vgsales.csv");
     geo = await d3.json("./dataset/geo_final.geojson");
 
 
 
     drawChoro(sales);    
     displayInteractive(sales);
-    drawBarChart();
+    drawBarChart(sales);
+    updateBarChart(sales);
     drawChosenRegions();
     initSelect();
 };
