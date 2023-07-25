@@ -264,7 +264,7 @@ async function drawChoro(sales) {
       selectedRegions.splice(selectedRegions.indexOf(region), 1);
     }
 
-    updateChosenRegions(choroData, selectedRegions);
+    updateChosenRegions(selectedRegions);
   };
 
   let onScroll = function (d) {

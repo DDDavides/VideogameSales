@@ -18,9 +18,7 @@ async function main() {
     drawChoro(sales);    
     displayInteractive(sales);
     drawBarChart();
-    drawChosenContinent();
-    // updateChosenRegions();
-    updateBarChart(sales);
+    drawChosenRegions();
     initSelect();
 };
 
