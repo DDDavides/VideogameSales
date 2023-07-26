@@ -110,8 +110,8 @@ function displayInteractive(sales) {
 }
 
 // function that filters the data based on the toggles
-function filterData(data) {
-  let filteredData = data.filter(d => {
+async function filterData(data) {
+  let filteredData = await data.filter(d => {
     if (!genreToggled.has(d.Genre)) {
       return false;
     }
@@ -123,8 +123,8 @@ function filterData(data) {
     }
     return true;
   });
-  updateChoro(filteredData);
-  updateBarChart(filteredData);
+  await updateChoro(filteredData);
+  await updateBarChart(filteredData);
 }
 
 function toggleAll(toggle, toggle_name) {
@@ -148,14 +148,14 @@ function toggleAll(toggle, toggle_name) {
   filterData(allData);
 }
 
-function getToggledGenres() {
+function getToggledGenre() {
   return genreToggled;
 }
 
-function getToggledPlatforms() {
+function getToggledPlatform() {
   return platformToggled;
 }
 
-function getToggledYears() {
+function getToggledYear() {
   return yearToggled;
 }

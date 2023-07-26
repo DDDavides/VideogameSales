@@ -6,7 +6,7 @@ function initSelect() {
     d3.select("#field-select").
       append("option").
       attr("value", fields[i]).
-      text(fields[i]);
+      text(fields[i])
   }
 
 /* Look for any elements with the class "custom-select": */
@@ -46,7 +46,8 @@ function initSelect() {
             for (k = 0; k < yl; k++) {
               y[k].setAttribute("class", "select-item btn-anim");
             }
-            this.setAttribute("class", "same-as-selected select-item btn-anim" );
+            this.setAttribute("class", "same-as-selected select-item btn-anim");
+            toggleFeature(this.textContent);
             break;
           }
         }

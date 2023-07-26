@@ -6,6 +6,7 @@ const vbWidth = boundingRect_continent.width;
 const vbHeight = boundingRect_continent.height;
 let chosen_continents = [];
 let db = [];
+let feature = d3.select("#field-select > option").node().text; // feature selezionata dall'utente nel bottone nella second view
 
 svgBarChart = d3.select("#bar-chart")
 svgWidth = svgBarChart.node().getBoundingClientRect().width
@@ -18,18 +19,21 @@ yScale = d3.scaleLinear().range([svgHeight-margin.bottom-margin.top,0])
 
 // Scale for subgroup position
 xSubgroup = d3.scaleBand()
-              .domain(chosen_continents)
               .range([0, xScale.bandwidth()])
               .padding(0.05)
 
 // define axes
 xAxis = d3.axisBottom().scale(xScale)
-yAxis = d3.axisLeft().scale(yScale)
+yAxis = d3.axisLeft().scale(yScale).tickFormat(legendTickFormat)
 
 // TODO: cambia font
 // svgBarChart.selectAll("text").attr("class", "text")
 
 cartesian = svgBarChart.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// just a simple scale of colors
+color = d3.scaleOrdinal()
+    .range(d3.schemeTableau10);
 
 async function drawChosenRegions(){  
   // get the dimension of the div containing the chosen continents
@@ -48,8 +52,8 @@ async function drawChosenRegions(){
 async function drawBarChart(sales){
   db = sales
   // di default il dominio dell'asse x è mappato con i generi selezionati
-  toggled_genres = allGenres
-  xScale.domain(toggled_genres)
+  toggled_features = eval("getToggled" + feature + "()")
+  xScale.domain(toggled_features)
   xSubgroup.domain(chosen_continents)
 
   // draw axes
@@ -73,18 +77,9 @@ async function updateYDomain(yDomain){
 }
 
 // il dataset mi arriva già filtrato da moli, ma devo raggruppare per continenti selezionati
-// BUG 2: Se prima clicco un filtro sui generi e poi seleziono il continente, 
-//        la barra relativa ad esso non è centrata sul genere
-// RISOLTO: Quando si aggiornano i subgroups bisogna rimappare il range
-
-// BUG 3: Se clicco un continente, poi tolgo e rimetto un genere, 
-//        updateBarChart rifa lo stesso calcolo più volte aumentando a dismisura le vendite
-// RISOLTO: brutalmente cancello e ricalcolo tutto ogni volta
-
-// BUG 4: Ogni volta che metto e tolgo un genere dai filtri, si crea un gruppo dentro in bar chart
-// RISOLTO: Togliendo .append("g") ogni volta che definivo barGroup
-
 // BUG 5: Se seleziono un continente, poi tolgo e rimetto un genere, il dato relativo a quel genere non viene visualizzato
+//        ma viene visualizzato solo dopo aver selezionato un altro genere
+// probabilmente è relativo al binding coi dati
 async function updateBarChart(dataset){
   db = dataset
   // BRUTALE: ogni volta che richiamo updateBarChart cancello e poi ricalcolo tutto
@@ -98,42 +93,40 @@ async function updateBarChart(dataset){
   tot_feature2continents_sales = []
 
   // prendi i generi presenti nel dataset
-  toggled_genres = getToggledGenres()
+  toggled_features = eval("getToggled" + feature + "()")
 
   // costruisco la struttura dati che mi serve per visualizzare i dati nel bar chart
   // TODO: usa d3.js map o nest (Quando faccio il get, riporta una copia del valore o il puntatore ad esso?)
-  for (let i = 0; i < dataset.length; i++) {
-    current_genre = dataset[i].Genre
-    currData = tot_feature2continents_sales.find(d => d["Genre"] == current_genre)
-    // se il genere è già presente aggiorno, per ogni continente, i valori esistenti
-    if( currData != undefined){
-      for (let j = 0; j < chosen_continents.length; j++) {
-        name2sale = currData["regions2sales"].find(d => d["regionName"] == chosen_continents[j])
-        // se il continente è già presente aggiorno il valore
-        if(name2sale != undefined){
-          name2sale["regionSales"] += parseFloat(dataset[i][chosen_continents[j] + "_Sales"])
-        }
-        // altrimenti lo inizializzo
-        else{
-          currData["regions2sales"].push({"regionName": chosen_continents[j], "regionSales": parseFloat(dataset[i][chosen_continents[j] + "_Sales"])})
-        }
-      }
+  // per manetenere l'ordine dei generi, inizializzo la struttura così che abbia tutti i generi già ordinati al suo interno
+  toggled_features.forEach(currentToggledFeature => {
+      tot_feature2continents_sales.push({"feature": currentToggledFeature, "regions2sales": []})
     }
-    // altrimenti inizializzo il genere
-    else{
-      // mette in coda questo elemento
-      tot_feature2continents_sales.push({"Genre": current_genre, "regions2sales": []})
-      for (let j = 0; j < chosen_continents.length; j++) {
-        // quindi inizializzo l'ultimo valore appena inserito
-        tot_feature2continents_sales[tot_feature2continents_sales.length-1]["regions2sales"].push({"regionName": chosen_continents[j], "regionSales": parseFloat(dataset[i][chosen_continents[j] + "_Sales"])})
+  );
+  // riempio la struttura dati con i dati del dataset
+  for (let i = 0; i < dataset.length; i++) {
+    current_feature = eval("dataset[i]." + feature)
+    if(current_feature == "N/A"){
+      continue
+    }
+    currData = tot_feature2continents_sales.find(d => d["feature"] == current_feature)
+    for (let j = 0; j < chosen_continents.length; j++) {
+      name2sale = currData["regions2sales"].find(d => d["regionName"] == chosen_continents[j])
+      // se il continente è già presente aggiorno il valore
+      if(name2sale != undefined){
+        name2sale["regionSales"] += parseFloat(dataset[i][chosen_continents[j] + "_Sales"])
+      }
+      // altrimenti lo inizializzo
+      else{
+        currData["regions2sales"].push({"regionName": chosen_continents[j], "regionSales": parseFloat(dataset[i][chosen_continents[j] + "_Sales"])})
       }
     }
   }
 
-  //console.log(tot_feature2continents_sales)
+  console.log(tot_feature2continents_sales)
 
   // di default il dominio dell'asse x è mappato con i generi
-  await updateXDomain(tot_feature2continents_sales.map(d => d.Genre))
+  await updateXDomain(tot_feature2continents_sales.map(d => d.feature))
+  // await updateXDomain(toggled_features)
 
   // aggiorna le barre che saranno visualizzate per ogni genere (una per continente scelto)
   await updateXSubgroup(chosen_continents)
@@ -149,33 +142,37 @@ async function updateBarChart(dataset){
   // Enter
   barGroup.enter().append("g")
                   .attr("class", "feature_group")
-                  .attr("id", d => d.Genre)
-                  .attr("transform", function(d) { return "translate(" + xScale(d.Genre) + ",0)"; })
+                  .attr("id", d => d.feature)
+                  .attr("transform", function(d) { return "translate(" + xScale(d.feature) + ",0)"; })
+  // Update
+  barGroup.attr("transform", function(d) { return "translate(" + xScale(d.feature) + ",0)"; })
+          .attr("id", d => d.feature)
+          // metti in enterRect i rettangoli che devono essere al suo interno
   // Exit
-  barGroup.filter(function(d){console.log("Esce ", d.Genre); return d.Genre}).exit().remove()
-  console.log(barGroup)
+  barGroup.exit().remove()
 
   // SINGLE BAR
   // tanti rettangoli quanti sono i continenti scelti
+  barGroup = cartesian.selectAll(".feature_group") // necessario perchè ora ci sono dei nuovi gruppi che altrimenti non sarebbero visti 
   dataRects = barGroup.selectAll("rect")
                       .data(function(d) { return d.regions2sales}) // data = [{regionName: "", regionSales: #}, ...]
 
   // Enter: append a new rect every time we have an extra data vs dom element
   dataRects.enter().append("rect")
            .attr("id", d => d.regionName)
-           .attr("x", function(d) { 
-                // console.log("regionName ", d.regionName); 
-                // console.log("xSubgroup ", xSubgroup(d.regionName));
+           .attr("x", function(d) {
+                //console.log("regionName ", d.regionName); 
+                //console.log("xSubgroup ", xSubgroup(d.regionName));
                 return xSubgroup(d.regionName); })
            .attr("y", function(d) { return yScale(d.regionSales); })
+           .style("fill", function(d) { return color(d.regionName); })
            .attr("width", xSubgroup.bandwidth())
            .attr("height", function(d) { return svgHeight - margin.top - margin.bottom - yScale(d.regionSales); })
-           
 
   // Update: updates will happend neither inserting new elements or updating them
-  // TODO: CONTROLLA QUESTO
-  dataRects.attr("x", function(d) { return xSubgroup(d.regionName); })
+  dataRects.transition(1000).attr("x", function(d) { return xSubgroup(d.regionName); })
             .attr("y", function(d) { return yScale(d.regionSales); })
+            .style("fill", function(d) { return color(d.regionName); })
             .attr("width", xSubgroup.bandwidth())
             .attr("height", function(d) { return svgHeight - margin.top - margin.bottom - yScale(d.regionSales); })
 
@@ -210,7 +207,7 @@ async function updateChosenRegions(selectedRegions){
 
   // fatto fittare la size data per una corretta visualizzazione
   projection.fitSize([svgWidth, svgHeight], {type:"FeatureCollection", features: chosen_continents_features});
-  
+
   // Draw the map
   svgContinent.attr("viewBox", "0 0 " + vbWidth + " " + vbHeight)
     .append("g")
@@ -220,4 +217,11 @@ async function updateChosenRegions(selectedRegions){
     .join("path")
     .attr("class", "country")
     .attr("d", d3.geoPath().projection(projection))
+    .style("fill", function(d) { return color(d.properties.continent); })
+}
+
+// bottone per la selezione della feature (asse x barchart)
+async function toggleFeature(featureToggled){
+  feature = featureToggled
+  updateBarChart(db)
 }
