@@ -135,6 +135,7 @@ async function updateBarChart(dataset){
   await updateYDomain([0, d3.max(tot_feature2continents_sales, d => d3.max(d.regions2sales, d => d.regionSales))])
 
   //===========================DRAW BAR CHART================================
+  // TODO: aggiungi transizioni alle animazioni e disaccoppiale
   // BAR GROUP
   // Data join: un gruppo per feature (valori asse x)
   barGroup = cartesian.selectAll(".feature_group")
@@ -170,14 +171,14 @@ async function updateBarChart(dataset){
            .attr("height", function(d) { return svgHeight - margin.top - margin.bottom - yScale(d.regionSales); })
 
   // Update: updates will happend neither inserting new elements or updating them
-  dataRects.transition(1000).attr("x", function(d) { return xSubgroup(d.regionName); })
+  dataRects.attr("x", function(d) { return xSubgroup(d.regionName); })
             .attr("y", function(d) { return yScale(d.regionSales); })
             .style("fill", function(d) { return color(d.regionName); })
             .attr("width", xSubgroup.bandwidth())
             .attr("height", function(d) { return svgHeight - margin.top - margin.bottom - yScale(d.regionSales); })
 
   // Exit
-  dataRects.exit().transition().attr("height", 0).remove()
+  dataRects.exit().attr("height", 0).remove()
 }
 
 // funzione aggiorna le regioni che sono state selezionate nella prima view
