@@ -13,7 +13,6 @@ svgWidth = svgBarChart.node().getBoundingClientRect().width
 svgHeight = svgBarChart.node().getBoundingClientRect().height
 
 // define axes scale
-// TODO: metti domain(["genres"]) per vedere cosa succede
 xScale = d3.scaleBand().range([0, svgWidth-margin.right-margin.left]).padding(0.1)
 yScale = d3.scaleLinear().range([svgHeight-margin.bottom-margin.top,0])
 
@@ -26,9 +25,7 @@ xSubgroup = d3.scaleBand()
 xAxis = d3.axisBottom().scale(xScale)
 yAxis = d3.axisLeft().scale(yScale).tickFormat(legendTickFormat)
 
-// TODO: cambia font
-// svgBarChart.selectAll("text").attr("class", "text")
-
+// setting cartesiamo position
 cartesian = svgBarChart.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 // just a simple scale of colors
@@ -77,27 +74,15 @@ async function updateYDomain(yDomain){
 }
 
 // il dataset mi arriva già filtrato da moli, ma devo raggruppare per continenti selezionati
-// BUG 5: Se seleziono un continente, poi tolgo e rimetto un genere, il dato relativo a quel genere non viene visualizzato
-//        ma viene visualizzato solo dopo aver selezionato un altro genere
-// probabilmente è relativo al binding coi dati
 async function updateBarChart(dataset){
   db = dataset
-  // BRUTALE: ogni volta che richiamo updateBarChart cancello e poi ricalcolo tutto
-  // TODO: trova un modo per fare in modo che non venga ricalcolato tutto ogni volta
-  //        [
-  //          { feature1: "", 
-  //            regions2sales: [{regionName: "", regionSales: #}, ...]
-  //          }, 
-  //          ...
-  //        ]
   tot_feature2continents_sales = []
 
   // prendi i generi presenti nel dataset
   toggled_features = eval("getToggled" + feature + "()")
 
   // costruisco la struttura dati che mi serve per visualizzare i dati nel bar chart
-  // TODO: usa d3.js map o nest (Quando faccio il get, riporta una copia del valore o il puntatore ad esso?)
-  // per manetenere l'ordine dei generi, inizializzo la struttura così che abbia tutti i generi già ordinati al suo interno
+  // N.B. per manetenere l'ordine dei generi, inizializzo la struttura così che abbia tutti i generi già ordinati al suo interno
   toggled_features.forEach(currentToggledFeature => {
       tot_feature2continents_sales.push({"feature": currentToggledFeature, "regions2sales": []})
     }
@@ -105,6 +90,8 @@ async function updateBarChart(dataset){
   // riempio la struttura dati con i dati del dataset
   for (let i = 0; i < dataset.length; i++) {
     current_feature = eval("dataset[i]." + feature)
+    // controllo necessario poiché il dataset iniziale potrebbe avere, per la feature selezionata, dei valori "N/A"
+    // infatti se non fosse così, perderemmo dei dati
     if(current_feature == "N/A"){
       continue
     }
@@ -124,9 +111,8 @@ async function updateBarChart(dataset){
 
   console.log(tot_feature2continents_sales)
 
-  // di default il dominio dell'asse x è mappato con i generi
+  // il dominio dell'asse x è mappato con le feature selezionate 
   await updateXDomain(tot_feature2continents_sales.map(d => d.feature))
-  // await updateXDomain(toggled_features)
 
   // aggiorna le barre che saranno visualizzate per ogni genere (una per continente scelto)
   await updateXSubgroup(chosen_continents)
@@ -134,8 +120,8 @@ async function updateBarChart(dataset){
   // aggiorno il dominio dell'asse y
   await updateYDomain([0, d3.max(tot_feature2continents_sales, d => d3.max(d.regions2sales, d => d.regionSales))])
 
+  // TODO: mantenere l'ordine alfabetico delle feature? così che se tolgo ad esempio il genere action per sbaglio e poi lo riclicco, lo ritrovo allo stesso posto
   //===========================DRAW BAR CHART================================
-  // TODO: aggiungi transizioni alle animazioni e disaccoppiale
   // BAR GROUP
   // Data join: un gruppo per feature (valori asse x)
   barGroup = cartesian.selectAll(".feature_group")
@@ -146,9 +132,9 @@ async function updateBarChart(dataset){
                   .attr("id", d => d.feature)
                   .attr("transform", function(d) { return "translate(" + xScale(d.feature) + ",0)"; })
   // Update
-  barGroup.attr("transform", function(d) { return "translate(" + xScale(d.feature) + ",0)"; })
+  barGroup.transition().attr("transform", function(d) { return "translate(" + xScale(d.feature) + ",0)"; })
           .attr("id", d => d.feature)
-          // metti in enterRect i rettangoli che devono essere al suo interno
+
   // Exit
   barGroup.exit().remove()
 
@@ -161,17 +147,16 @@ async function updateBarChart(dataset){
   // Enter: append a new rect every time we have an extra data vs dom element
   dataRects.enter().append("rect")
            .attr("id", d => d.regionName)
-           .attr("x", function(d) {
-                //console.log("regionName ", d.regionName); 
-                //console.log("xSubgroup ", xSubgroup(d.regionName));
-                return xSubgroup(d.regionName); })
-           .attr("y", function(d) { return yScale(d.regionSales); })
+           .attr("x", function(d) { return xSubgroup(d.regionName); })
+           .attr("y", function(d) { return yScale(0); }) // setto la base della barra a 0
            .style("fill", function(d) { return color(d.regionName); })
            .attr("width", xSubgroup.bandwidth())
+           .transition() // nella transazione aumento la l'altezza e sposto la base della barra verso l'alto così sembra cresca dal basso verso l'alto
+           .attr("y", function(d) { return yScale(d.regionSales); }) 
            .attr("height", function(d) { return svgHeight - margin.top - margin.bottom - yScale(d.regionSales); })
 
   // Update: updates will happend neither inserting new elements or updating them
-  dataRects.attr("x", function(d) { return xSubgroup(d.regionName); })
+  dataRects.transition().attr("x", function(d) { return xSubgroup(d.regionName); })
             .attr("y", function(d) { return yScale(d.regionSales); })
             .style("fill", function(d) { return color(d.regionName); })
             .attr("width", xSubgroup.bandwidth())
@@ -179,6 +164,8 @@ async function updateBarChart(dataset){
 
   // Exit
   dataRects.exit().attr("height", 0).remove()
+
+  svgBarChart.selectAll("text").attr("class", "text")
 }
 
 // funzione aggiorna le regioni che sono state selezionate nella prima view

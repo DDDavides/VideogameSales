@@ -342,6 +342,9 @@ async function updateChoro(sales) {
   choroData = computeTotalSales(sales);
 
   const colorScale = computeColorScale(choroData);
+  let onMouseOver = function(d) {
+    updateTooltip(d.target, choroData, colorScale);
+  };
 
   svg.selectAll(".region")
     .data(geo.features).transition().duration(500)
@@ -350,6 +353,8 @@ async function updateChoro(sales) {
       d.total = choroData.get(region) || 0;
       return colorScale(d.total);
     });
+
+  svg.selectAll(".region").on("mouseover", onMouseOver);
 
   updateLegend(colorScale);
 }
