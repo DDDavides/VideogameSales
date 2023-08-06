@@ -25,9 +25,7 @@ const legendTickFormat = (d) => {
     return d3.format(".2s")(d / 1000) + " B$"; 
 }
 
-function computeContrastColor(hexColor, trashold = .5) {
-  return d3.hsl(hexColor).l > trashold ? "black" : "white";
-}
+
 
 function tickAdjust(g) {
   return g.selectAll(".tick line").attr("x1", -legendWidth);
@@ -149,52 +147,48 @@ function computeColorScale(choroData) {
     .domain([0, max <= 1 ? 1 : max]);
 }
 
-function addTooltip() {
+function addChoroTooltip() {
   let tooltip = d3.select("#dataviz")
     .append("div")
   tooltip
-    .attr("id", "tooltip")
+    .attr("id", "choro-tooltip")
     .classed("hidden", true)
     .classed("round-edge-with-shadow", true);
   
   tooltip
     .append("p")
     .append("span")
-    .attr("id", "category")
+    .attr("id", "choro-category")
     .classed("text", true)
     .text("Region:");
     
   tooltip.append("p")
     .append("span")
-    .attr("id", "value")
+    .attr("id", "choro-value")
     .classed("text", true)
     .text("Value: ");
 }
 
-async function updateTooltip(element, choroData, colorScale) {
-  element = d3.select(element);
-  let region = element.attr("id");
+async function updateTooltip(field, data, colorScale) {
 
-  let value = choroData.get(region);
-  let category = translate[region];
+  let value = data.get(field);
+  let category = translate[field];
 
-  let tooltip = d3.select("#tooltip");
+  let tooltip = d3.select("#choro-tooltip");
   
   var backgroundColor = colorScale(value);
   var textColor = computeContrastColor(backgroundColor);
-  
-
 
   tooltip
     .style("background-color", backgroundColor)
     .style("color", textColor);
 
   tooltip
-    .select("#value")
+    .select("#choro-value")
     .text("Value: " + legendTickFormat(value));
   
   tooltip
-    .select("#category")
+    .select("#choro-category")
     .text("Region: " + category);
 };
 
@@ -247,7 +241,7 @@ async function updateLegend(colorScale) {
 
 
 async function drawChoro(sales) {
-  addTooltip();
+  addChoroTooltip();
   choroData = computeTotalSales(sales);
   const colorScale = computeColorScale(choroData);
 
@@ -268,18 +262,19 @@ async function drawChoro(sales) {
   };
 
   let onScroll = function (d) {
-    let element = d3.select("#tooltip");
+    let element = d3.select("#choro-tooltip");
     element.classed("hidden", true);
     // element.classed("disable-hover", true);
   };
 
   let onMouseOver = function(d) {
-    updateTooltip(d.target, choroData, colorScale);
+    let id = d3.select(d.target).attr("id");
+    updateTooltip(id, choroData, colorScale);
   };
   
   let onMouseMove = function(d) {
 
-    let tooltip = d3.select("#tooltip");
+    let tooltip = d3.select("#choro-tooltip");
     tooltip.classed("hidden", false);
     
     let tooltipHeight = tooltip.node().getBoundingClientRect().height;
@@ -293,7 +288,7 @@ async function drawChoro(sales) {
   };
 
   let onMouseOut = function() { 
-    d3.select("#tooltip").classed("hidden", true);
+    d3.select("#choro-tooltip").classed("hidden", true);
   };
 
   // Map and projection
@@ -343,7 +338,8 @@ async function updateChoro(sales) {
 
   const colorScale = computeColorScale(choroData);
   let onMouseOver = function(d) {
-    updateTooltip(d.target, choroData, colorScale);
+    let id = d3.select(d.target).attr("id");
+    updateTooltip(id, choroData, colorScale);
   };
 
   svg.selectAll(".region")

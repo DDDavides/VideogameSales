@@ -2,6 +2,10 @@ var geo = null;
 var sales = null;
 var colorPalette = d3.interpolateGreens;
 
+function computeContrastColor(hexColor, trashold = .5) {
+  return d3.hsl(hexColor).l > trashold ? "black" : "white";
+}
+
 const regions = ["NA", "EU", "JP", "Other"];
 const translate = {
   "NA": "North America",
@@ -10,6 +14,7 @@ const translate = {
   "Other": "Other"
 }
 const allGenres = ["Action", "Adventure", "Fighting", "Misc", "Platform", "Puzzle", "Racing", "Role-Playing", "Shooter", "Simulation", "Sports", "Strategy"];
+
 
 async function main() {
     sales = await d3.csv("./dataset/vgsales.csv");

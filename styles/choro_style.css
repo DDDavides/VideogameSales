@@ -34,7 +34,7 @@
 	pointer-events: none;
 }
 
-#tooltip {
+#choro-tooltip {
 	position: absolute;
 	height: auto;
 	width: auto;
@@ -44,11 +44,7 @@
 	margin-bottom: 3px;
 }
 
-#tooltip.hidden {
-	display: none;
-}
-
-#tooltip p {
+#choro-tooltip p {
 	margin: 0;
 	font-family: "Heebo", sans-serif;
 	font-size: 15px;
