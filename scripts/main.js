@@ -27,6 +27,7 @@ async function main() {
     drawBarChart(sales);
     updateBarChart(sales);
     drawChosenRegions();
+    addBarTooltip();
     initSelect();
 };
 

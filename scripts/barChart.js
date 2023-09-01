@@ -131,12 +131,43 @@ async function updateBarChart(dataset){
                   .attr("class", "feature_group")
                   .attr("id", d => d.feature)
                   .attr("transform", function(d) { return "translate(" + xScale(d.feature) + ",0)"; })
+
   // Update
   barGroup.transition().attr("transform", function(d) { return "translate(" + xScale(d.feature) + ",0)"; })
           .attr("id", d => d.feature)
 
   // Exit
   barGroup.exit().remove()
+
+  // tooltip //
+  let onMouseOver = function(d) {
+    let id = d3.select(this).attr("id");
+
+    let idx1 = d3.select(this.parentNode.parentNode).selectAll(".feature_group").nodes().indexOf(this.parentNode);
+    let idx2 = d3.select(this.parentNode).selectAll("rect").nodes().indexOf(this);
+    let value = tot_feature2continents_sales[idx1].regions2sales[idx2].regionSales;
+
+    updateBarTooltip(id, value, color);
+  };
+  
+  let onMouseMove = function(d) {
+
+    let tooltip = d3.select("#bar-tooltip");
+    tooltip.classed("hidden", false);
+    
+    let tooltipHeight = tooltip.node().getBoundingClientRect().height;
+    let tooltipWidth = tooltip.node().getBoundingClientRect().width;
+    
+    let coords = d3.pointer(d, d3.select("body").node());
+    
+    tooltip
+      .style("left",(coords[0] - tooltipWidth) + "px")
+      .style("top", (coords[1] - tooltipHeight) + "px");
+  };
+
+  let onMouseOut = function() { 
+    d3.select("#bar-tooltip").classed("hidden", true);
+  };
 
   // SINGLE BAR
   // tanti rettangoli quanti sono i continenti scelti
@@ -151,9 +182,13 @@ async function updateBarChart(dataset){
            .attr("y", function(d) { return yScale(0); }) // setto la base della barra a 0
            .style("fill", function(d) { return color(d.regionName); })
            .attr("width", xSubgroup.bandwidth())
+           .on("mouseover", onMouseOver)
+           .on("mousemove", onMouseMove)
+           .on("mouseout", onMouseOut)
            .transition() // nella transazione aumento la l'altezza e sposto la base della barra verso l'alto così sembra cresca dal basso verso l'alto
            .attr("y", function(d) { return yScale(d.regionSales); }) 
            .attr("height", function(d) { return svgHeight - margin.top - margin.bottom - yScale(d.regionSales); })
+
 
   // Update: updates will happend neither inserting new elements or updating them
   dataRects.transition().attr("x", function(d) { return xSubgroup(d.regionName); })
@@ -206,6 +241,7 @@ async function updateChosenRegions(selectedRegions){
     .attr("class", "country")
     .attr("d", d3.geoPath().projection(projection))
     .style("fill", function(d) { return color(d.properties.continent); })
+  
 }
 
 // bottone per la selezione della feature (asse x barchart)
@@ -213,3 +249,47 @@ async function toggleFeature(featureToggled){
   feature = featureToggled
   updateBarChart(db)
 }
+
+function addBarTooltip() {
+  let tooltip = d3.select("#div-barchart")
+    .append("div")
+  tooltip
+    .attr("id", "bar-tooltip")
+    .classed("hidden", true)
+    .classed("round-edge-with-shadow", true)
+    .classed("tooltip", true);
+  
+  tooltip
+    .append("p")
+    .append("span")
+    .attr("id", "bar-category")
+    .classed("text", true)
+    .text("Region:");
+    
+  tooltip.append("p")
+    .append("span")
+    .attr("id", "bar-value")
+    .classed("text", true)
+    .text("Value: ");
+}
+
+async function updateBarTooltip(field, value, colorScale) {
+  let category = translate[field];
+
+  let tooltip = d3.select("#bar-tooltip");
+  
+  var backgroundColor = colorScale(field);
+  var textColor = computeContrastColor(backgroundColor);
+
+  tooltip
+    .style("background-color", backgroundColor)
+    .style("color", textColor);
+
+  tooltip
+    .select("#bar-value")
+    .text("Value: " + legendTickFormat(value));
+  
+  tooltip
+    .select("#bar-category")
+    .text("Region: " + category);
+};

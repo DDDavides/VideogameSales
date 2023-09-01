@@ -52,3 +52,20 @@
 .select-hide {
   display: none;
 }
+
+#bar-tooltip {
+	position: absolute;
+	height: auto;
+	width: auto;
+	padding: 10px;
+	opacity: .95;
+	pointer-events: none;
+	margin-bottom: 3px;
+}
+
+#bar-tooltip p {
+	margin: 0;
+	font-family: "Heebo", sans-serif;
+	font-size: 15px;
+	line-height: 20px;
+}

@@ -153,7 +153,8 @@ function addChoroTooltip() {
   tooltip
     .attr("id", "choro-tooltip")
     .classed("hidden", true)
-    .classed("round-edge-with-shadow", true);
+    .classed("round-edge-with-shadow", true)
+    .classed("tooltip", true);
   
   tooltip
     .append("p")
@@ -169,7 +170,7 @@ function addChoroTooltip() {
     .text("Value: ");
 }
 
-async function updateTooltip(field, data, colorScale) {
+async function updateChoroTooltip(field, data, colorScale) {
 
   let value = data.get(field);
   let category = translate[field];
@@ -262,14 +263,14 @@ async function drawChoro(sales) {
   };
 
   let onScroll = function (d) {
-    let element = d3.select("#choro-tooltip");
-    element.classed("hidden", true);
+    let elements = d3.selectAll(".tooltip");
+    elements.classed("hidden", true);
     // element.classed("disable-hover", true);
   };
 
   let onMouseOver = function(d) {
     let id = d3.select(d.target).attr("id");
-    updateTooltip(id, choroData, colorScale);
+    updateChoroTooltip(id, choroData, colorScale);
   };
   
   let onMouseMove = function(d) {
@@ -339,7 +340,7 @@ async function updateChoro(sales) {
   const colorScale = computeColorScale(choroData);
   let onMouseOver = function(d) {
     let id = d3.select(d.target).attr("id");
-    updateTooltip(id, choroData, colorScale);
+    updateChoroTooltip(id, choroData, colorScale);
   };
 
   svg.selectAll(".region")
