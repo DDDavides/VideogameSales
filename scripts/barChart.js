@@ -32,7 +32,8 @@ cartesian = svgBarChart.append("g").attr("transform", "translate(" + margin.left
 
 // just a simple scale of colors
 color = d3.scaleOrdinal()
-    .range(d3.schemeTableau10);
+    .range(d3.schemeTableau10)
+    .domain(["EU","Other","NA","JP"]);
 
 // value for the relative/absolute switch
 let relative = false;
@@ -158,6 +159,7 @@ async function updateBarChart(dataset){
   // tooltip //
   let onMouseOver = function(d) {
     let id = d3.select(this).attr("id");
+    console.log(tot_feature2continents_sales)
 
     let idx1 = d3.select(this.parentNode.parentNode).selectAll(".feature_group").nodes().indexOf(this.parentNode);
     let idx2 = d3.select(this.parentNode).selectAll("rect").nodes().indexOf(this);
@@ -208,6 +210,7 @@ async function updateBarChart(dataset){
 
   // Update: updates will happend neither inserting new elements or updating them
   dataRects.transition().attr("x", function(d) { return xSubgroup(d.regionName); })
+            .attr("id", d => d.regionName)
             .attr("y", function(d) { return yScale(d.regionSales); })
             .style("fill", function(d) { return color(d.regionName); })
             .attr("width", xSubgroup.bandwidth())

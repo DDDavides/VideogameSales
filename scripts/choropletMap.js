@@ -7,6 +7,7 @@ const viewBoxWidth = width;
 const viewBoxHeight = height;
 
 var selectedRegions = [];
+var regionsDec = ["Other", "NA", "EU", "JP"];
 
 const legendWidth = .02 * width;
 const legendHeight = .25 * width;
@@ -240,6 +241,15 @@ async function updateLegend(colorScale) {
     .attr("class", "text disable-select");
 }
 
+function compare( a, b ) {
+  if ( regionsDec.indexOf(a) < regionsDec.indexOf(b) ){
+    return -1;
+  }
+  if ( regionsDec.indexOf(a) > regionsDec.indexOf(b) ){
+    return 1;
+  }
+  return 0;
+}
 
 async function drawChoro(sales) {
   addChoroTooltip();
@@ -259,6 +269,7 @@ async function drawChoro(sales) {
       selectedRegions.splice(selectedRegions.indexOf(region), 1);
     }
 
+    selectedRegions.sort(compare);
     updateChosenRegions(selectedRegions);
   };
 
