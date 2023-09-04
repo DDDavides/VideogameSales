@@ -24,7 +24,7 @@ There are 16,598 records. 2 records were dropped due to incomplete information.
 
 ## Web Page Organization
 The web page is organized into two principal areas:
-- The first one contains a **Choroplet Map** representing the videogames sales based on the region.
-- The second one contains a **Bar Chart** in each geographical area depending on the feature selected (Genre, Platform, Year). This chart can also be modified to display the data in **absolute/relative** visualization.
+- The first one contains a **Choroplet Map** representing the videogames sales based on the region. This area also permits to select with a click one or more regions to be desplayed in the second view.
+- The second one contains a **Bar Chart** representing the sales for each geographical area selected, depending on the chosen feature (Genre, Platform, Year). This chart can also be modified to display the data in **absolute/relative** (in relative each bar represents the sales of the region for the corresponding feature divided by the total sales) visualization.
 
 Both of the areas share a filter by panel that permits to filter data by the three different features (Genre, Platform, Year).
