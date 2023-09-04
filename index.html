@@ -5,6 +5,7 @@
         <link rel="stylesheet" href="styles/interaction_bar_style.css"> 
         <link rel="stylesheet" href="styles/select_style.css">
         <link rel="stylesheet" href="styles/choro_style.css">
+        <link rel="stylesheet" href="styles/toggle_switch_style.css">
         <script src="lib/d3.min.js"></script>
         <meta charset="UTF-8">
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,15 +60,26 @@
                 </div>
                 <div class="flex-container-below" id="div-barchart">
                     <svg id="bar-chart"></svg>
-                    
-                    <div class="custom-select">
-                        <select id="field-select">
-                          <option value="0">Genre</option>
-                        </select>
+                    <div class="horizontal-flex-container">
+                        <div class="custom-select">
+                            <select id="field-select">
+                              <option value="0">Genre</option>
+                            </select>
+                        </div>
+                        <div class="btn-container">
+                            <i class="fa fa-sun-o" aria-hidden="true"></i>
+                              <label class="switch btn-color-mode-switch">
+                                    <input type="checkbox" name="color_mode" id="abs_rel_switch" value="1">
+                                    <label for="color_mode" data-on="Relative" data-off="Absolute" class="btn-color-mode-switch-inner text"></label>
+                                </label>
+                              <i class="fa fa-moon-o" aria-hidden="true"></i>
+                          </div>
                     </div>
-                </div>
-            </div>  
-        </div>
+                    
+                    </div>
+                </div>  
+            </div>
+        <script src="scripts/toggleSwitch.js"></script>
         <script src="scripts/choropletMap.js"></script>
         <script src="scripts/interaction.js"></script>
         <script src="scripts/barChart.js"></script>

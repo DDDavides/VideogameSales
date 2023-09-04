@@ -8,6 +8,8 @@ let chosen_continents = [];
 let db = [];
 let feature = d3.select("#field-select > option").node().text; // feature selezionata dall'utente nel bottone nella second view
 
+let currentTickFormat = legendTickFormat;
+
 svgBarChart = d3.select("#bar-chart")
 svgWidth = svgBarChart.node().getBoundingClientRect().width
 svgHeight = svgBarChart.node().getBoundingClientRect().height
@@ -23,7 +25,7 @@ xSubgroup = d3.scaleBand()
 
 // define axes
 xAxis = d3.axisBottom().scale(xScale)
-yAxis = d3.axisLeft().scale(yScale).tickFormat(legendTickFormat)
+yAxis = d3.axisLeft().scale(yScale).tickFormat(currentTickFormat)
 
 // setting cartesiamo position
 cartesian = svgBarChart.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -31,6 +33,13 @@ cartesian = svgBarChart.append("g").attr("transform", "translate(" + margin.left
 // just a simple scale of colors
 color = d3.scaleOrdinal()
     .range(d3.schemeTableau10);
+
+// value for the relative/absolute switch
+let relative = false;
+
+const percentTickFormat = (d) => { 
+  return d3.format(".0%")(d);
+}
 
 async function drawChosenRegions(){  
   // get the dimension of the div containing the chosen continents
@@ -70,6 +79,7 @@ async function updateXSubgroup(xSubgroupDomain){
 
 async function updateYDomain(yDomain){
   yScale.domain(yDomain)
+  yAxis = d3.axisLeft().scale(yScale).tickFormat(currentTickFormat)
   d3.select(".y-axis").transition().call(yAxis)
 }
 
@@ -84,8 +94,8 @@ async function updateBarChart(dataset){
   // costruisco la struttura dati che mi serve per visualizzare i dati nel bar chart
   // N.B. per manetenere l'ordine dei generi, inizializzo la struttura così che abbia tutti i generi già ordinati al suo interno
   toggled_features.forEach(currentToggledFeature => {
-      tot_feature2continents_sales.push({"feature": currentToggledFeature, "regions2sales": []})
-    }
+    tot_feature2continents_sales.push({"feature": currentToggledFeature, "regions2sales": []})
+  }
   );
   // riempio la struttura dati con i dati del dataset
   for (let i = 0; i < dataset.length; i++) {
@@ -108,8 +118,14 @@ async function updateBarChart(dataset){
       }
     }
   }
-
-  console.log(tot_feature2continents_sales)
+  if (relative){
+    // dividi per il totale delle vendite per ciascuna regione
+    tot_feature2continents_sales.forEach(d => {
+      d["regions2sales"].forEach(e => {
+        e["regionSales"] = e["regionSales"] / choroData.get(e["regionName"]);
+      })
+    });
+  }
 
   // il dominio dell'asse x è mappato con le feature selezionate 
   await updateXDomain(tot_feature2continents_sales.map(d => d.feature))
@@ -287,9 +303,23 @@ async function updateBarTooltip(field, value, colorScale) {
 
   tooltip
     .select("#bar-value")
-    .text("Value: " + legendTickFormat(value));
+    .text("Value: " + currentTickFormat(value));
   
   tooltip
     .select("#bar-category")
     .text("Region: " + category);
 };
+
+function updateTickFormat(){
+  if (relative){
+    currentTickFormat = percentTickFormat;
+  } else {
+    currentTickFormat = legendTickFormat;
+  }
+}
+
+async function changeToRelative(value){
+  relative = value;
+  updateTickFormat();
+  updateBarChart(db);
+}

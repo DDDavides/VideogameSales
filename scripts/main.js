@@ -29,6 +29,7 @@ async function main() {
     drawChosenRegions();
     addBarTooltip();
     initSelect();
+    absRelSwitchSet();
 };
 
 main();

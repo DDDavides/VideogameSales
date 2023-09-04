@@ -2,7 +2,7 @@
 	stroke-width: .1px;
 	stroke: black;
 	fill-opacity: 1;
-	transition: fill-opacity .2s ease-in-out, stroke-width .2s ease-in-out;
+	transition: stroke-width .2s ease-in-out, fill-opacity .2s ease-in-out, stroke .2s ease-in-out;
 }
 
 .region:hover {
@@ -15,6 +15,7 @@
 	fill-opacity: .85;
 	stroke-width: 1px;
 	transition: stroke-width .2s ease-in-out, fill-opacity .2s ease-in-out;
+	stroke: tomato;
 	fill-opacity: 1;
 }
 

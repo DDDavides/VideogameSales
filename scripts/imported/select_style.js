@@ -58,7 +58,6 @@ function initSelect() {
     let aHeight = a.getBoundingClientRect().height;
 
     b.style.bottom = aHeight + "px";
-    console.log(b.style.bottom + " " + b.style.top);
     x[i].appendChild(b);
     a.addEventListener("click", function(e) {
       /* When the select box is clicked, close any other select boxes,
