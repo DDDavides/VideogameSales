@@ -39,7 +39,7 @@ color = d3.scaleOrdinal()
 let relative = false;
 
 const percentTickFormat = (d) => { 
-  return d3.format(".0%")(d);
+  return d3.format(".2%")(d);
 }
 
 async function drawChosenRegions(){  
